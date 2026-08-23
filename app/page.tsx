@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ClipboardCheck, Search, Building, UserPlus } from "lucide-react";
+import { ClipboardCheck, Search, Building, UserPlus, Wrench } from "lucide-react";
 
 export default function Home() {
   return (
@@ -24,6 +24,10 @@ export default function Home() {
           <Link href="/maker/login" className="btn-secondary w-full">
             <Building size={22} />
             ハウスメーカー担当者ログイン
+          </Link>
+          <Link href="/request/c1" className="btn-secondary w-full">
+            <Wrench size={22} />
+            施主・工務店の受付フォーム（デモ）
           </Link>
           <Link href="/status" className="btn-secondary w-full">
             <Search size={22} />
