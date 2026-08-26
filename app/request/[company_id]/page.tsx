@@ -3,7 +3,7 @@
 import { useMemo, useState } from "react";
 import { useParams, useSearchParams } from "next/navigation";
 import { useStore } from "@/lib/store";
-import { CATEGORY_OPTIONS, PreferredSlot } from "@/lib/types";
+import { CATEGORY_OPTIONS, PreferredSlot, AM_TIME_OPTIONS, PM_TIME_OPTIONS } from "@/lib/types";
 import { toDateKey, WEEKDAY_LABELS } from "@/lib/date";
 import { Camera, ImagePlus, X, Loader2, CheckCircle2, Sun, Moon } from "lucide-react";
 import Link from "next/link";
@@ -26,6 +26,7 @@ export default function PublicRequestPage() {
   const [previews, setPreviews] = useState<string[]>([]);
   const [preferredDate, setPreferredDate] = useState<string>("");
   const [preferredSlot, setPreferredSlot] = useState<PreferredSlot | "">("");
+  const [preferredTime, setPreferredTime] = useState<string>("");
 
   const [submitting, setSubmitting] = useState(false);
   const [trackingCode, setTrackingCode] = useState<string | null>(null);
@@ -78,6 +79,7 @@ export default function PublicRequestPage() {
       photoUrls: previews,
       preferredDate: preferredDate || null,
       preferredSlot: preferredSlot || null,
+      preferredTime: preferredTime || null,
     });
 
     setSubmitting(false);
@@ -212,6 +214,7 @@ export default function PublicRequestPage() {
                     onClick={() => {
                       setPreferredDate(day.key);
                       setPreferredSlot("am");
+                      setPreferredTime("");
                     }}
                     className={`flex-1 flex items-center justify-center gap-1 rounded-lg py-2.5 text-sm font-bold border-2 disabled:opacity-30 ${
                       preferredDate === day.key && preferredSlot === "am"
@@ -227,6 +230,7 @@ export default function PublicRequestPage() {
                     onClick={() => {
                       setPreferredDate(day.key);
                       setPreferredSlot("pm");
+                      setPreferredTime("");
                     }}
                     className={`flex-1 flex items-center justify-center gap-1 rounded-lg py-2.5 text-sm font-bold border-2 disabled:opacity-30 ${
                       preferredDate === day.key && preferredSlot === "pm"
@@ -239,6 +243,28 @@ export default function PublicRequestPage() {
                 </div>
               ))}
             </div>
+
+            {preferredDate && preferredSlot && (
+              <div className="mt-3">
+                <label className="label-lg">ご希望のお時間</label>
+                <div className="grid grid-cols-3 gap-2">
+                  {(preferredSlot === "am" ? AM_TIME_OPTIONS : PM_TIME_OPTIONS).map((t) => (
+                    <button
+                      key={t}
+                      type="button"
+                      onClick={() => setPreferredTime(t)}
+                      className={`rounded-lg py-2.5 text-sm font-bold border-2 ${
+                        preferredTime === t
+                          ? "bg-brand-600 text-white border-brand-600"
+                          : "border-slate-200 text-slate-600"
+                      }`}
+                    >
+                      {t}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
 
           {error && <p className="text-sm font-bold text-red-600 bg-red-50 rounded-lg px-3 py-2">{error}</p>}

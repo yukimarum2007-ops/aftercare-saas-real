@@ -84,6 +84,7 @@ export default function RequestModal({
                 <p className="font-bold">
                   {request.preferred_date ?? "未指定"}{" "}
                   {request.preferred_slot === "am" ? "午前" : request.preferred_slot === "pm" ? "午後" : ""}
+                  {request.preferred_time ? ` ${request.preferred_time}〜` : ""}
                 </p>
               </div>
             </div>

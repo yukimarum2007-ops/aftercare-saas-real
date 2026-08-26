@@ -59,7 +59,8 @@ export default function StatusResultPage() {
                   <p className={`font-bold ${done ? "text-slate-800" : "text-slate-300"}`}>{step.label}</p>
                   {step.key === "confirmed" && result.preferred_date && done && (
                     <p className="text-sm text-slate-500 mt-1">
-                      {result.preferred_date} {result.preferred_slot === "am" ? "午前" : "午後"} 訪問予定
+                      {result.preferred_date} {result.preferred_slot === "am" ? "午前" : "午後"}
+                      {result.preferred_time ? ` ${result.preferred_time}〜` : ""} 訪問予定
                     </p>
                   )}
                 </div>

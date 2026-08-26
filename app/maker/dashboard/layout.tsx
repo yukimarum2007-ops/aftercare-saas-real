@@ -4,7 +4,7 @@ import { useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useStore } from "@/lib/store";
-import { Building, LayoutDashboard, FilePlus2 } from "lucide-react";
+import { Building, LayoutDashboard, FilePlus2, UserCog } from "lucide-react";
 import SignOutButton from "@/components/SignOutButton";
 
 export default function MakerDashboardLayout({
@@ -57,6 +57,13 @@ export default function MakerDashboardLayout({
             <FilePlus2 size={18} />
             案件登録
           </Link>
+          <Link
+            href="/maker/dashboard/customers"
+            className="hidden md:flex items-center gap-2 text-sm font-bold text-slate-500 hover:text-brand-600"
+          >
+            <UserCog size={18} />
+            施主様管理
+          </Link>
           <SignOutButton compact redirectTo="/maker/login" />
         </div>
       </header>
@@ -68,6 +75,9 @@ export default function MakerDashboardLayout({
         </Link>
         <Link href="/maker/dashboard/new-request" className="flex-1 text-center py-3 text-sm font-bold text-slate-600">
           案件登録
+        </Link>
+        <Link href="/maker/dashboard/customers" className="flex-1 text-center py-3 text-sm font-bold text-slate-600">
+          施主様管理
         </Link>
       </div>
 

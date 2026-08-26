@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { useStore } from "@/lib/store";
-import { CATEGORY_OPTIONS, PreferredSlot } from "@/lib/types";
+import { CATEGORY_OPTIONS, PreferredSlot, AM_TIME_OPTIONS, PM_TIME_OPTIONS } from "@/lib/types";
 import { toDateKey, WEEKDAY_LABELS } from "@/lib/date";
 import { Camera, ImagePlus, X, CheckCircle2, Sun, Moon, Send } from "lucide-react";
 
@@ -28,6 +28,7 @@ export default function MakerNewRequestPage() {
   const [previews, setPreviews] = useState<string[]>([]);
   const [preferredDate, setPreferredDate] = useState("");
   const [preferredSlot, setPreferredSlot] = useState<PreferredSlot | "">("");
+  const [preferredTime, setPreferredTime] = useState("");
   const [error, setError] = useState("");
   const [trackingCode, setTrackingCode] = useState<string | null>(null);
 
@@ -65,6 +66,7 @@ export default function MakerNewRequestPage() {
     setPreviews([]);
     setPreferredDate("");
     setPreferredSlot("");
+    setPreferredTime("");
     setTrackingCode(null);
   }
 
@@ -85,6 +87,7 @@ export default function MakerNewRequestPage() {
       photoUrls: previews,
       preferredDate: preferredDate || null,
       preferredSlot: preferredSlot || null,
+      preferredTime: preferredTime || null,
     });
     if (!result.ok) {
       setError(result.message ?? "登録に失敗しました。");
@@ -225,6 +228,7 @@ export default function MakerNewRequestPage() {
                       onClick={() => {
                         setPreferredDate(day.key);
                         setPreferredSlot("am");
+                        setPreferredTime("");
                       }}
                       className={`flex-1 flex items-center justify-center gap-1 rounded-lg py-2.5 text-sm font-bold border-2 disabled:opacity-30 ${
                         preferredDate === day.key && preferredSlot === "am"
@@ -240,6 +244,7 @@ export default function MakerNewRequestPage() {
                       onClick={() => {
                         setPreferredDate(day.key);
                         setPreferredSlot("pm");
+                        setPreferredTime("");
                       }}
                       className={`flex-1 flex items-center justify-center gap-1 rounded-lg py-2.5 text-sm font-bold border-2 disabled:opacity-30 ${
                         preferredDate === day.key && preferredSlot === "pm"
@@ -252,6 +257,28 @@ export default function MakerNewRequestPage() {
                   </div>
                 ))}
               </div>
+
+              {preferredDate && preferredSlot && (
+                <div className="mt-3">
+                  <label className="label-lg">ご希望のお時間</label>
+                  <div className="grid grid-cols-3 gap-2">
+                    {(preferredSlot === "am" ? AM_TIME_OPTIONS : PM_TIME_OPTIONS).map((t) => (
+                      <button
+                        key={t}
+                        type="button"
+                        onClick={() => setPreferredTime(t)}
+                        className={`rounded-lg py-2.5 text-sm font-bold border-2 ${
+                          preferredTime === t
+                            ? "bg-brand-600 text-white border-brand-600"
+                            : "border-slate-200 text-slate-600"
+                        }`}
+                      >
+                        {t}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
           )}
 

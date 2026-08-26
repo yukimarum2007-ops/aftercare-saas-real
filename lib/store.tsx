@@ -11,9 +11,12 @@ import {
   RequestStatus,
   AffiliationStatus,
   RequestSource,
+  Customer,
+  CustomerConnection,
 } from "./types";
 import {
   MockAccount,
+  MockCustomerAccount,
   initialCompanies,
   initialHouseMakers,
   initialAccounts,
@@ -21,6 +24,9 @@ import {
   initialAvailabilitySlots,
   initialAffiliations,
   initialRequests,
+  initialCustomers,
+  initialCustomerAccounts,
+  initialCustomerConnections,
 } from "./mock-data";
 
 // ------------------------------------------------------------
@@ -34,6 +40,7 @@ import {
 type CurrentUser =
   | { type: "company"; companyId: string; fullName: string }
   | { type: "house_maker"; houseMakerId: string; fullName: string }
+  | { type: "customer"; customerId: string; fullName: string }
   | null;
 
 function randomId(prefix: string) {
@@ -62,6 +69,8 @@ interface StoreState {
   availabilitySlots: Record<string, AvailabilitySlot>;
   affiliations: CompanyAffiliation[];
   requests: ServiceRequest[];
+  customers: Customer[];
+  customerConnections: CustomerConnection[];
 
   login: (email: string, password: string) => { ok: boolean; message?: string; redirectTo?: string };
   logout: () => void;
@@ -71,6 +80,16 @@ interface StoreState {
     email: string;
     password: string;
     houseMakerId: string;
+  }) => { ok: boolean; message?: string };
+
+  signupCustomer: (input: {
+    name: string;
+    phone: string;
+    address: string;
+    email: string;
+    password: string;
+    companyId?: string; // 空文字/未指定なら「連携なし」
+    houseMakerId?: string; // 空文字/未指定なら「連携なし」
   }) => { ok: boolean; message?: string };
 
   addPartner: (input: { name: string; contactName: string; contactPhone: string }) => Partner | null;
@@ -88,6 +107,7 @@ interface StoreState {
     photoUrls: string[];
     preferredDate: string | null;
     preferredSlot: "am" | "pm" | null;
+    preferredTime?: string | null;
   }) => { ok: boolean; trackingCode?: string; message?: string };
 
   submitHouseMakerRequest: (input: {
@@ -100,10 +120,26 @@ interface StoreState {
     photoUrls: string[];
     preferredDate: string | null;
     preferredSlot: "am" | "pm" | null;
+    preferredTime?: string | null;
+  }) => { ok: boolean; trackingCode?: string; message?: string };
+
+  submitCustomerRequest: (input: {
+    companyId: string;
+    requestCategory: string;
+    description: string;
+    photoUrls: string[];
+    preferredDate: string | null;
+    preferredSlot: "am" | "pm" | null;
+    preferredTime?: string | null;
   }) => { ok: boolean; trackingCode?: string; message?: string };
 
   updateRequestStatus: (requestId: string, status: RequestStatus, note: string) => void;
   updateAffiliationStatus: (affiliationId: string, status: AffiliationStatus) => void;
+  updateCustomerConnectionStatus: (
+    connectionId: string,
+    side: "company" | "house_maker",
+    status: AffiliationStatus
+  ) => void;
   getRequestByTrackingCode: (code: string) => ServiceRequest | null;
 }
 
@@ -120,19 +156,36 @@ export function MockDataProvider({ children }: { children: React.ReactNode }) {
   );
   const [affiliations, setAffiliations] = useState<CompanyAffiliation[]>(initialAffiliations);
   const [requests, setRequests] = useState<ServiceRequest[]>(initialRequests);
+  const [customers, setCustomers] = useState<Customer[]>(initialCustomers);
+  const [customerAccounts, setCustomerAccounts] = useState<MockCustomerAccount[]>(initialCustomerAccounts);
+  const [customerConnections, setCustomerConnections] = useState<CustomerConnection[]>(
+    initialCustomerConnections
+  );
 
   const login = useCallback(
     (email: string, password: string) => {
       const account = accounts.find((a) => a.email === email && a.password === password);
-      if (!account) return { ok: false, message: "メールアドレスまたはパスワードが正しくありません。" };
-      if (account.type === "company") {
-        setCurrentUser({ type: "company", companyId: account.refId, fullName: account.fullName });
-        return { ok: true, redirectTo: "/dashboard" };
+      if (account) {
+        if (account.type === "company") {
+          setCurrentUser({ type: "company", companyId: account.refId, fullName: account.fullName });
+          return { ok: true, redirectTo: "/dashboard" };
+        }
+        setCurrentUser({ type: "house_maker", houseMakerId: account.refId, fullName: account.fullName });
+        return { ok: true, redirectTo: "/maker/dashboard" };
       }
-      setCurrentUser({ type: "house_maker", houseMakerId: account.refId, fullName: account.fullName });
-      return { ok: true, redirectTo: "/maker/dashboard" };
+      const customerAccount = customerAccounts.find((a) => a.email === email && a.password === password);
+      if (customerAccount) {
+        const customer = customers.find((c) => c.id === customerAccount.customerId);
+        setCurrentUser({
+          type: "customer",
+          customerId: customerAccount.customerId,
+          fullName: customer?.name ?? "",
+        });
+        return { ok: true, redirectTo: "/customer/dashboard" };
+      }
+      return { ok: false, message: "メールアドレスまたはパスワードが正しくありません。" };
     },
-    [accounts]
+    [accounts, customerAccounts, customers]
   );
 
   const logout = useCallback(() => setCurrentUser(null), []);
@@ -172,6 +225,48 @@ export function MockDataProvider({ children }: { children: React.ReactNode }) {
       return { ok: true };
     },
     [accounts]
+  );
+
+  const signupCustomer = useCallback<StoreState["signupCustomer"]>(
+    (input) => {
+      if (customerAccounts.some((a) => a.email === input.email)) {
+        return { ok: false, message: "このメールアドレスは既に登録されています。" };
+      }
+      const customerId = randomId("cu");
+      const newCustomer: Customer = {
+        id: customerId,
+        name: input.name,
+        phone: input.phone,
+        address: input.address,
+        email: input.email,
+        created_at: new Date().toISOString(),
+      };
+      const newAccount: MockCustomerAccount = {
+        id: randomId("cua"),
+        email: input.email,
+        password: input.password,
+        customerId,
+      };
+      setCustomers((prev) => [...prev, newCustomer]);
+      setCustomerAccounts((prev) => [...prev, newAccount]);
+
+      // 会社・ハウスメーカーのどちらも選択されなかった場合は連携レコードを作らない
+      if (input.companyId || input.houseMakerId) {
+        const newConnection: CustomerConnection = {
+          id: randomId("cc"),
+          customer_id: customerId,
+          company_id: input.companyId || null,
+          house_maker_id: input.houseMakerId || null,
+          company_status: input.companyId ? "pending" : "approved",
+          house_maker_status: input.houseMakerId ? "pending" : "approved",
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+        };
+        setCustomerConnections((prev) => [...prev, newConnection]);
+      }
+      return { ok: true };
+    },
+    [customerAccounts]
   );
 
   const addPartner = useCallback(
@@ -225,6 +320,7 @@ export function MockDataProvider({ children }: { children: React.ReactNode }) {
       companyId: string;
       partnerId?: string | null;
       houseMakerId?: string | null;
+      customerId?: string | null;
       source: RequestSource;
       customerName: string;
       customerPhone: string;
@@ -234,12 +330,14 @@ export function MockDataProvider({ children }: { children: React.ReactNode }) {
       photoUrls: string[];
       preferredDate: string | null;
       preferredSlot: "am" | "pm" | null;
+      preferredTime?: string | null;
     }) => {
       const newRequest: ServiceRequest = {
         id: randomId("r"),
         company_id: input.companyId,
         partner_id: input.partnerId ?? null,
         house_maker_id: input.houseMakerId ?? null,
+        customer_id: input.customerId ?? null,
         source: input.source,
         tracking_code: trackingCode(),
         customer_name: input.customerName,
@@ -250,6 +348,7 @@ export function MockDataProvider({ children }: { children: React.ReactNode }) {
         photo_urls: input.photoUrls,
         preferred_date: input.preferredDate,
         preferred_slot: input.preferredSlot,
+        preferred_time: input.preferredTime ?? null,
         status: "new",
         staff_note: null,
         created_at: new Date().toISOString(),
@@ -278,6 +377,7 @@ export function MockDataProvider({ children }: { children: React.ReactNode }) {
         photoUrls: input.photoUrls,
         preferredDate: input.preferredDate,
         preferredSlot: input.preferredSlot,
+        preferredTime: input.preferredTime,
       });
       return { ok: true, trackingCode: req.tracking_code };
     },
@@ -311,10 +411,41 @@ export function MockDataProvider({ children }: { children: React.ReactNode }) {
         photoUrls: input.photoUrls,
         preferredDate: input.preferredDate,
         preferredSlot: input.preferredSlot,
+        preferredTime: input.preferredTime,
       });
       return { ok: true, trackingCode: req.tracking_code };
     },
     [currentUser, affiliations, createRequest]
+  );
+
+  const submitCustomerRequest = useCallback<StoreState["submitCustomerRequest"]>(
+    (input) => {
+      if (!currentUser || currentUser.type !== "customer") {
+        return { ok: false, message: "ログインが必要です。" };
+      }
+      const company = companies.find((c) => c.id === input.companyId);
+      if (!company) return { ok: false, message: "会社が見つかりませんでした。" };
+      const customer = customers.find((c) => c.id === currentUser.customerId);
+      if (!customer) return { ok: false, message: "アカウント情報が見つかりませんでした。" };
+      const req = createRequest({
+        companyId: input.companyId,
+        partnerId: null,
+        houseMakerId: null,
+        customerId: currentUser.customerId,
+        source: "homeowner",
+        customerName: customer.name,
+        customerPhone: customer.phone,
+        customerAddress: customer.address,
+        requestCategory: input.requestCategory,
+        description: input.description,
+        photoUrls: input.photoUrls,
+        preferredDate: input.preferredDate,
+        preferredSlot: input.preferredSlot,
+        preferredTime: input.preferredTime,
+      });
+      return { ok: true, trackingCode: req.tracking_code };
+    },
+    [currentUser, companies, customers, createRequest]
   );
 
   const updateRequestStatus = useCallback((requestId: string, status: RequestStatus, note: string) => {
@@ -331,6 +462,24 @@ export function MockDataProvider({ children }: { children: React.ReactNode }) {
     );
   }, []);
 
+  const updateCustomerConnectionStatus = useCallback(
+    (connectionId: string, side: "company" | "house_maker", status: AffiliationStatus) => {
+      setCustomerConnections((prev) =>
+        prev.map((c) =>
+          c.id === connectionId
+            ? {
+                ...c,
+                company_status: side === "company" ? status : c.company_status,
+                house_maker_status: side === "house_maker" ? status : c.house_maker_status,
+                updated_at: new Date().toISOString(),
+              }
+            : c
+        )
+      );
+    },
+    []
+  );
+
   const getRequestByTrackingCode = useCallback(
     (code: string) => requests.find((r) => r.tracking_code === code.toUpperCase()) ?? null,
     [requests]
@@ -346,16 +495,21 @@ export function MockDataProvider({ children }: { children: React.ReactNode }) {
       availabilitySlots,
       affiliations,
       requests,
+      customers,
+      customerConnections,
       login,
       logout,
       signupCompany,
+      signupCustomer,
       addPartner,
       toggleSlot,
       getSlot,
       submitPublicRequest,
       submitHouseMakerRequest,
+      submitCustomerRequest,
       updateRequestStatus,
       updateAffiliationStatus,
+      updateCustomerConnectionStatus,
       getRequestByTrackingCode,
     }),
     [
@@ -367,16 +521,21 @@ export function MockDataProvider({ children }: { children: React.ReactNode }) {
       availabilitySlots,
       affiliations,
       requests,
+      customers,
+      customerConnections,
       login,
       logout,
       signupCompany,
+      signupCustomer,
       addPartner,
       toggleSlot,
       getSlot,
       submitPublicRequest,
       submitHouseMakerRequest,
+      submitCustomerRequest,
       updateRequestStatus,
       updateAffiliationStatus,
+      updateCustomerConnectionStatus,
       getRequestByTrackingCode,
     ]
   );

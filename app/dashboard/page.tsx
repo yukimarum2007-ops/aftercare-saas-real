@@ -12,6 +12,7 @@ import {
 } from "@/lib/types";
 import StatusBadge from "@/components/StatusBadge";
 import RequestModal from "@/components/RequestModal";
+import PublicUrlCard from "@/components/PublicUrlCard";
 import { getMonthGrid, toDateKey, formatMonthLabel, WEEKDAY_LABELS } from "@/lib/date";
 import { Inbox, CalendarClock, CheckCircle2, ChevronLeft, ChevronRight } from "lucide-react";
 
@@ -67,6 +68,8 @@ export default function DashboardPage() {
   return (
     <div className="space-y-6 max-w-6xl mx-auto">
       <h1 className="text-2xl font-bold text-slate-800">ダッシュボード</h1>
+
+      <PublicUrlCard companyId={companyId} />
 
       {companyAffiliations.length > 0 && (
         <div className="flex flex-wrap gap-2">
@@ -179,6 +182,7 @@ export default function DashboardPage() {
                 <div className="flex items-center justify-between mt-1">
                   <p className="text-xs text-slate-400">
                     希望日: {r.preferred_date ?? "未指定"} {r.preferred_slot === "am" ? "午前" : r.preferred_slot === "pm" ? "午後" : ""}
+                    {r.preferred_time ? ` ${r.preferred_time}〜` : ""}
                   </p>
                   <span className="text-xs font-bold text-slate-400">{SOURCE_LABEL[r.source]}</span>
                 </div>

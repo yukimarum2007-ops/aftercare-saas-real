@@ -26,6 +26,19 @@ export function formatMonthLabel(year: number, month: number) {
 
 export const WEEKDAY_LABELS = ["日", "月", "火", "水", "木", "金", "土"];
 
+// 午前(9:00〜12:00) / 午後(13:00〜16:00) を30分刻みで区切った時刻候補を生成
+export function buildTimeOptions(slot: "am" | "pm"): string[] {
+  const start = slot === "am" ? 9 * 60 : 13 * 60;
+  const end = slot === "am" ? 12 * 60 : 16 * 60;
+  const times: string[] = [];
+  for (let m = start; m < end; m += 30) {
+    const h = Math.floor(m / 60);
+    const mm = m % 60;
+    times.push(`${String(h).padStart(2, "0")}:${String(mm).padStart(2, "0")}`);
+  }
+  return times;
+}
+
 // 空き枠設定(availability_slots)から、今日以降の予約候補日リストを生成する。
 // レコードが存在しない日は「受付可」とみなす。
 export function buildCandidateDays(

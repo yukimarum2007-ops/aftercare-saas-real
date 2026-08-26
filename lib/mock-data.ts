@@ -5,6 +5,8 @@ import {
   AvailabilitySlot,
   CompanyAffiliation,
   ServiceRequest,
+  Customer,
+  CustomerConnection,
 } from "./types";
 
 // ------------------------------------------------------------
@@ -66,6 +68,46 @@ export const initialAccounts: MockAccount[] = [
   },
 ];
 
+export interface MockCustomerAccount {
+  id: string;
+  email: string;
+  password: string;
+  customerId: string;
+}
+
+export const initialCustomers: Customer[] = [
+  {
+    id: "cu1",
+    name: "田中 一郎",
+    phone: "090-1111-2222",
+    address: "東京都世田谷区2-2-2",
+    email: "customer@example.com",
+    created_at: new Date().toISOString(),
+  },
+];
+
+export const initialCustomerAccounts: MockCustomerAccount[] = [
+  {
+    id: "cua1",
+    email: "customer@example.com",
+    password: "password123",
+    customerId: "cu1",
+  },
+];
+
+export const initialCustomerConnections: CustomerConnection[] = [
+  {
+    id: "cc1",
+    customer_id: "cu1",
+    company_id: "c1",
+    house_maker_id: "hm1",
+    company_status: "approved",
+    house_maker_status: "pending",
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString(),
+  },
+];
+
 export const initialPartners: Partner[] = [
   {
     id: "p1",
@@ -121,8 +163,10 @@ export const initialRequests: ServiceRequest[] = [
     photo_urls: [],
     preferred_date: daysFromNow(3),
     preferred_slot: "am",
+    preferred_time: "09:30",
     status: "new",
     staff_note: null,
+    customer_id: "cu1",
     created_at: new Date().toISOString(),
     updated_at: new Date().toISOString(),
   },
@@ -141,8 +185,10 @@ export const initialRequests: ServiceRequest[] = [
     photo_urls: [],
     preferred_date: daysFromNow(5),
     preferred_slot: "pm",
+    preferred_time: "14:00",
     status: "confirmed",
     staff_note: "訪問日程を電話で確認済み",
+    customer_id: null,
     created_at: new Date().toISOString(),
     updated_at: new Date().toISOString(),
   },
@@ -161,8 +207,10 @@ export const initialRequests: ServiceRequest[] = [
     photo_urls: [],
     preferred_date: null,
     preferred_slot: null,
+    preferred_time: null,
     status: "completed",
     staff_note: "調整対応完了",
+    customer_id: null,
     created_at: new Date().toISOString(),
     updated_at: new Date().toISOString(),
   },

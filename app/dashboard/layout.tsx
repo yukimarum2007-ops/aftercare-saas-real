@@ -4,7 +4,7 @@ import { useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useStore } from "@/lib/store";
-import { LayoutDashboard, CalendarDays, Users } from "lucide-react";
+import { LayoutDashboard, CalendarDays, Users, UserCog } from "lucide-react";
 import SignOutButton from "@/components/SignOutButton";
 
 export default function DashboardLayout({
@@ -34,6 +34,7 @@ export default function DashboardLayout({
     { href: "/dashboard", label: "ダッシュボード", icon: LayoutDashboard },
     { href: "/dashboard/calendar", label: "空き枠設定", icon: CalendarDays },
     { href: "/dashboard/partners", label: "連携工務店", icon: Users },
+    { href: "/dashboard/customers", label: "施主様管理", icon: UserCog },
   ];
 
   return (

@@ -43,8 +43,10 @@ export interface ServiceRequest {
   photo_urls: string[];
   preferred_date: string | null;
   preferred_slot: PreferredSlot | null;
+  preferred_time: string | null;
   status: RequestStatus;
   staff_note: string | null;
+  customer_id: string | null;
   created_at: string;
   updated_at: string;
   partners?: { name: string } | null;
@@ -109,3 +111,30 @@ export const CATEGORY_OPTIONS = [
   "電気設備",
   "その他",
 ];
+
+// 午前(9:00-12:00) / 午後(13:00-16:00) の30分刻み時間選択肢
+export const AM_TIME_OPTIONS = ["09:00", "09:30", "10:00", "10:30", "11:00", "11:30"];
+export const PM_TIME_OPTIONS = ["13:00", "13:30", "14:00", "14:30", "15:00", "15:30"];
+
+export interface Customer {
+  id: string;
+  name: string;
+  phone: string;
+  address: string;
+  email: string;
+  created_at: string;
+}
+
+export interface CustomerConnection {
+  id: string;
+  customer_id: string;
+  company_id: string | null; // null の場合は「アフター会社との連携なし」
+  house_maker_id: string | null; // null の場合は「ハウスメーカーとの連携なし」
+  company_status: AffiliationStatus; // company_id が null の場合は使用しない
+  house_maker_status: AffiliationStatus; // house_maker_id が null の場合は使用しない
+  created_at: string;
+  updated_at: string;
+  customers?: { name: string };
+  companies?: { name: string };
+  house_makers?: { name: string };
+}
