@@ -3,16 +3,25 @@ import { ClipboardCheck, Search, Building, UserPlus, User, Wrench } from "lucide
 
 export default function Home() {
   return (
-    <main className="min-h-screen flex items-center justify-center px-6 py-10">
-      <div className="max-w-md w-full text-center space-y-6">
-        <h1 className="text-2xl font-bold text-slate-800">
-          アフターメンテナンス管理システム
-        </h1>
-        <p className="text-slate-500">
-          アフター会社・ハウスメーカーの方はログイン、施主様は新規会員登録または担当会社から案内されたURLからご利用ください。
-        </p>
+    <main className="min-h-screen flex items-center justify-center px-6 py-14">
+      <div className="max-w-md w-full space-y-8">
+        <div className="text-center space-y-3">
+          <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-gradient-to-br from-brand-500 to-brand-700 shadow-lg shadow-brand-600/30 mb-1">
+            <Wrench className="text-white" size={26} />
+          </div>
+          <h1 className="text-2xl font-bold text-slate-800 leading-snug">
+            アフターメンテナンス
+            <br />
+            管理システム
+          </h1>
+          <p className="text-slate-500 text-sm leading-relaxed">
+            アフター会社・ハウスメーカーの方はログイン、
+            <br />
+            施主様は新規会員登録からご利用ください。
+          </p>
+        </div>
 
-        <div className="flex flex-col gap-3 pt-2">
+        <div className="flex flex-col gap-3">
           <Link href="/login" className="btn-primary w-full">
             <ClipboardCheck size={22} />
             アフター会社ログイン
@@ -25,7 +34,13 @@ export default function Home() {
             <Building size={22} />
             ハウスメーカー担当者ログイン
           </Link>
-          <div className="h-px bg-slate-200 my-1" />
+
+          <div className="flex items-center gap-3 py-1">
+            <div className="h-px flex-1 bg-slate-200" />
+            <span className="text-xs font-bold text-slate-400">施主様はこちら</span>
+            <div className="h-px flex-1 bg-slate-200" />
+          </div>
+
           <Link href="/customer/login" className="btn-secondary w-full">
             <User size={22} />
             施主様ログイン
@@ -34,10 +49,6 @@ export default function Home() {
             <UserPlus size={22} />
             施主様 新規会員登録
           </Link>
-          <Link href="/request/c1" className="btn-secondary w-full">
-            <Wrench size={22} />
-            施主・工務店の受付フォーム（デモ）
-          </Link>
           <Link href="/status" className="btn-secondary w-full">
             <Search size={22} />
             対応状況を確認する
@@ -45,7 +56,7 @@ export default function Home() {
         </div>
 
         <div className="card p-4 text-left text-sm text-slate-500 space-y-1">
-          <p className="font-bold text-slate-600">デモ用ログイン情報</p>
+          <p className="section-eyebrow mb-1">デモ用ログイン情報</p>
           <p>アフター会社: company@example.com / password123</p>
           <p>ハウスメーカー: maker@example.com / password123</p>
           <p>施主様: customer@example.com / password123</p>

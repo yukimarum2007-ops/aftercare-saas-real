@@ -2,7 +2,7 @@
 
 import { useEffect } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useStore } from "@/lib/store";
 import { Building, LayoutDashboard, FilePlus2, UserCog } from "lucide-react";
 import SignOutButton from "@/components/SignOutButton";
@@ -13,6 +13,7 @@ export default function MakerDashboardLayout({
   children: React.ReactNode;
 }) {
   const router = useRouter();
+  const pathname = usePathname();
   const { currentUser, houseMakers } = useStore();
 
   useEffect(() => {
@@ -30,55 +31,60 @@ export default function MakerDashboardLayout({
   const houseMaker = houseMakers.find((hm) => hm.id === currentUser.houseMakerId);
   const houseMakerName = houseMaker?.name ?? "ハウスメーカー";
 
+  const navItems = [
+    { href: "/maker/dashboard", label: "提携申請", icon: LayoutDashboard },
+    { href: "/maker/dashboard/new-request", label: "案件登録", icon: FilePlus2 },
+    { href: "/maker/dashboard/customers", label: "施主様管理", icon: UserCog },
+  ];
+
   return (
     <div className="min-h-screen bg-slate-50">
-      <header className="bg-white border-b border-slate-200 px-4 md:px-8 py-4 flex items-center justify-between sticky top-0 z-10">
+      <header className="bg-white/95 backdrop-blur-sm border-b border-slate-200/70 px-4 md:px-8 py-4 flex items-center justify-between sticky top-0 z-10">
         <div className="flex items-center gap-3">
-          <div className="p-2 rounded-xl bg-brand-50 text-brand-600">
-            <Building size={22} />
+          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-brand-500 to-brand-700 shadow-md shadow-brand-600/25 flex items-center justify-center shrink-0">
+            <Building className="text-white" size={18} />
           </div>
           <div>
-            <p className="text-xs font-bold text-slate-400">ハウスメーカー</p>
+            <p className="text-[11px] font-bold text-slate-400">ハウスメーカー</p>
             <p className="font-bold text-slate-800">{houseMakerName}</p>
           </div>
         </div>
         <div className="flex items-center gap-4">
-          <Link
-            href="/maker/dashboard"
-            className="hidden md:flex items-center gap-2 text-sm font-bold text-slate-500 hover:text-brand-600"
-          >
-            <LayoutDashboard size={18} />
-            提携申請
-          </Link>
-          <Link
-            href="/maker/dashboard/new-request"
-            className="hidden md:flex items-center gap-2 text-sm font-bold text-slate-500 hover:text-brand-600"
-          >
-            <FilePlus2 size={18} />
-            案件登録
-          </Link>
-          <Link
-            href="/maker/dashboard/customers"
-            className="hidden md:flex items-center gap-2 text-sm font-bold text-slate-500 hover:text-brand-600"
-          >
-            <UserCog size={18} />
-            施主様管理
-          </Link>
+          {navItems.map((item) => {
+            const active = pathname === item.href;
+            return (
+              <Link
+                key={item.href}
+                href={item.href}
+                className={`hidden md:flex items-center gap-2 text-sm font-bold transition-colors ${
+                  active ? "text-brand-600" : "text-slate-500 hover:text-brand-600"
+                }`}
+              >
+                <item.icon size={18} />
+                {item.label}
+              </Link>
+            );
+          })}
           <SignOutButton compact redirectTo="/maker/login" />
         </div>
       </header>
 
       {/* モバイル用サブナビ */}
-      <div className="md:hidden bg-white border-b border-slate-200 flex">
-        <Link href="/maker/dashboard" className="flex-1 text-center py-3 text-sm font-bold text-slate-600">
-          提携申請
-        </Link>
-        <Link href="/maker/dashboard/new-request" className="flex-1 text-center py-3 text-sm font-bold text-slate-600">
-          案件登録
-        </Link>
-        <Link href="/maker/dashboard/customers" className="flex-1 text-center py-3 text-sm font-bold text-slate-600">
-          施主様管理
-        </Link>
+      <div className="md:hidden bg-white/95 backdrop-blur-sm border-b border-slate-200/70 flex">
+        {navItems.map((item) => {
+          const active = pathname === item.href;
+          return (
+            <Link
+              key={item.href}
+              href={item.href}
+              className={`flex-1 text-center py-3 text-sm font-bold ${
+                active ? "text-brand-600" : "text-slate-600"
+              }`}
+            >
+              {item.label}
+            </Link>
+          );
+        })}
       </div>
 
       <main className="p-4 md:p-8">{children}</main>

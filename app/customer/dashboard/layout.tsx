@@ -1,9 +1,10 @@
 "use client";
 
 import { useEffect } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useStore } from "@/lib/store";
-import { User } from "lucide-react";
+import { User, Settings2 } from "lucide-react";
 import SignOutButton from "@/components/SignOutButton";
 
 export default function CustomerDashboardLayout({
@@ -28,17 +29,26 @@ export default function CustomerDashboardLayout({
 
   return (
     <div className="min-h-screen bg-slate-50">
-      <header className="bg-white border-b border-slate-200 px-4 md:px-8 py-4 flex items-center justify-between sticky top-0 z-10">
+      <header className="bg-white/95 backdrop-blur-sm border-b border-slate-200/70 px-4 md:px-8 py-4 flex items-center justify-between sticky top-0 z-10">
         <div className="flex items-center gap-3">
-          <div className="p-2 rounded-xl bg-brand-50 text-brand-600">
-            <User size={22} />
+          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-brand-500 to-brand-700 shadow-md shadow-brand-600/25 flex items-center justify-center shrink-0">
+            <User className="text-white" size={18} />
           </div>
           <div>
-            <p className="text-xs font-bold text-slate-400">施主様マイページ</p>
+            <p className="text-[11px] font-bold text-slate-400">施主様マイページ</p>
             <p className="font-bold text-slate-800">{currentUser.fullName} 様</p>
           </div>
         </div>
-        <SignOutButton compact redirectTo="/customer/login" />
+        <div className="flex items-center gap-2">
+          <Link
+            href="/customer/dashboard/profile"
+            className="p-2 rounded-xl text-slate-500 hover:bg-slate-100 hover:text-brand-600"
+            aria-label="プロフィール編集"
+          >
+            <Settings2 size={22} />
+          </Link>
+          <SignOutButton compact redirectTo="/customer/login" />
+        </div>
       </header>
 
       <main className="p-4 md:p-8">{children}</main>

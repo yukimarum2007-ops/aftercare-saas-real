@@ -92,6 +92,14 @@ interface StoreState {
     houseMakerId?: string; // 空文字/未指定なら「連携なし」
   }) => { ok: boolean; message?: string };
 
+  updateCustomerProfile: (input: {
+    name: string;
+    phone: string;
+    address: string;
+    email: string;
+    newPassword?: string;
+  }) => { ok: boolean; message?: string };
+
   addPartner: (input: { name: string; contactName: string; contactPhone: string }) => Partner | null;
   toggleSlot: (companyId: string, dateKey: string, field: "am_available" | "pm_available") => void;
   getSlot: (companyId: string, dateKey: string) => { am: boolean; pm: boolean };
@@ -267,6 +275,37 @@ export function MockDataProvider({ children }: { children: React.ReactNode }) {
       return { ok: true };
     },
     [customerAccounts]
+  );
+
+  const updateCustomerProfile = useCallback<StoreState["updateCustomerProfile"]>(
+    (input) => {
+      if (!currentUser || currentUser.type !== "customer") {
+        return { ok: false, message: "ログインが必要です。" };
+      }
+      const emailTaken = customerAccounts.some(
+        (a) => a.email === input.email && a.customerId !== currentUser.customerId
+      );
+      if (emailTaken) {
+        return { ok: false, message: "このメールアドレスは既に使用されています。" };
+      }
+      setCustomers((prev) =>
+        prev.map((c) =>
+          c.id === currentUser.customerId
+            ? { ...c, name: input.name, phone: input.phone, address: input.address, email: input.email }
+            : c
+        )
+      );
+      setCustomerAccounts((prev) =>
+        prev.map((a) =>
+          a.customerId === currentUser.customerId
+            ? { ...a, email: input.email, password: input.newPassword ? input.newPassword : a.password }
+            : a
+        )
+      );
+      setCurrentUser((prev) => (prev && prev.type === "customer" ? { ...prev, fullName: input.name } : prev));
+      return { ok: true };
+    },
+    [currentUser, customerAccounts]
   );
 
   const addPartner = useCallback(
@@ -501,6 +540,7 @@ export function MockDataProvider({ children }: { children: React.ReactNode }) {
       logout,
       signupCompany,
       signupCustomer,
+      updateCustomerProfile,
       addPartner,
       toggleSlot,
       getSlot,
@@ -527,6 +567,7 @@ export function MockDataProvider({ children }: { children: React.ReactNode }) {
       logout,
       signupCompany,
       signupCustomer,
+      updateCustomerProfile,
       addPartner,
       toggleSlot,
       getSlot,
