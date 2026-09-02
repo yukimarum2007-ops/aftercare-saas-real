@@ -7,11 +7,7 @@ html {
 }
 
 body {
-  background-color: #f6f8fc;
-  background-image:
-    radial-gradient(60rem 30rem at 100% -10%, rgba(37, 112, 245, 0.07), transparent 60%),
-    radial-gradient(50rem 25rem at -10% 10%, rgba(37, 112, 245, 0.05), transparent 60%);
-  background-attachment: fixed;
+  background-color: #f5f6f8;
   color: #14213d;
   font-family: var(--font-noto-sans-jp), system-ui, -apple-system, sans-serif;
   letter-spacing: 0.01em;
@@ -50,10 +46,10 @@ button, a {
   background-image: linear-gradient(135deg, #4a8bff 0%, #2f7bff 45%, #1a56d6 100%);
 }
 .btn-secondary {
-  @apply btn-base bg-white/90 text-brand-700 border-2 border-brand-100 text-btn-lg px-6 py-4 shadow-sm hover:border-brand-300 hover:bg-brand-50 hover:-translate-y-0.5;
+  @apply btn-base bg-white text-brand-700 border-2 border-slate-200 text-btn-lg px-6 py-4 shadow-sm hover:border-brand-300 hover:bg-brand-50 hover:-translate-y-0.5;
 }
 .card {
-  @apply bg-white/95 backdrop-blur-sm rounded-2xl border border-slate-200/70 shadow-md shadow-slate-200/40 transition-shadow duration-200;
+  @apply bg-white rounded-2xl border border-slate-200/70 shadow-md shadow-slate-200/40 transition-shadow duration-200;
 }
 .input-lg {
   @apply w-full rounded-xl border-2 border-slate-200 bg-white px-4 py-3.5 text-lg transition-colors duration-150 focus:border-brand-500 focus:outline-none focus:ring-4 focus:ring-brand-100;
@@ -69,110 +65,45 @@ button, a {
 
 /* クリック可能な一覧行（案件一覧・提携一覧など）に統一感のあるホバー演出を付ける */
 .list-row {
-  @apply rounded-xl border border-slate-200 bg-white/70 transition-all duration-200 hover:border-brand-300 hover:shadow-md hover:shadow-brand-500/5 hover:-translate-y-0.5;
+  @apply rounded-xl border border-slate-200 bg-white transition-all duration-200 hover:border-brand-300 hover:shadow-md hover:shadow-brand-500/5 hover:-translate-y-0.5;
 }
 
-/* 何も無い状態の表示を少し温かみのある見た目に */
+/* 何も無い状態の表示 */
 .empty-state {
   @apply flex flex-col items-center justify-center gap-2 py-10 text-slate-400 text-sm;
 }
 
-/* 認証系ページ（ログイン・新規登録・ステータス確認）の背景。
-   部屋の中から差し込む灯りをイメージした、温かみのあるグラデーション + ぼかしブロブ。 */
-.auth-bg {
-  @apply relative overflow-hidden;
-  background-color: #fbf7f0;
-  background-image:
-    linear-gradient(180deg, #fdf6ec 0%, #fbf2e4 45%, #f7ead6 100%);
+/* アプリらしい「色帯ヘッダー + 白カード」レイアウト用の背景。
+   装飾は使わず、フラットな単色背景のみ（LINE・TVerのような明快さを優先）。 */
+.app-shell-bg {
+  background-color: #f5f6f8;
 }
-.auth-bg::before,
-.auth-bg::after {
+
+/* ヘッダー帯（グラデーション）。ページ最上部に敷き、下に白いカードを重ねて使う。 */
+.app-header-band {
+  @apply relative overflow-hidden text-white;
+  background-image: linear-gradient(135deg, #2f7bff 0%, #2570f5 45%, #173a8a 100%);
+}
+/* 帯の中に入れる、控えめな幾何学アクセント（写実的な装飾は使わない） */
+.app-header-band::before {
   content: "";
   position: absolute;
+  top: -3rem;
+  right: -3rem;
+  width: 14rem;
+  height: 14rem;
   border-radius: 9999px;
-  filter: blur(70px);
-  z-index: 0;
+  background: rgba(255, 255, 255, 0.08);
   pointer-events: none;
 }
-.auth-bg::before {
-  width: 28rem;
-  height: 28rem;
-  top: -11rem;
-  right: -9rem;
-  background: radial-gradient(circle, rgba(255, 176, 89, 0.35), transparent 70%);
-}
-.auth-bg::after {
-  width: 24rem;
-  height: 24rem;
-  bottom: -9rem;
-  left: -9rem;
-  background: radial-gradient(circle, rgba(37, 112, 245, 0.16), transparent 70%);
-}
-.auth-bg > * {
-  position: relative;
-  z-index: 1;
-}
-
-/* トップページ：夕焼け空 + 家並みシルエットの背景 */
-.home-hero-bg {
-  @apply relative overflow-hidden;
-  background-color: #eaf1fd;
-  background-image:
-    linear-gradient(180deg, #dbe9ff 0%, #eef2fb 35%, #fdf3e7 70%, #fbe6cf 100%);
-}
-.home-hero-bg::before {
+.app-header-band::after {
   content: "";
   position: absolute;
-  inset: 0;
-  background:
-    radial-gradient(38rem 20rem at 15% 15%, rgba(255, 255, 255, 0.55), transparent 60%),
-    radial-gradient(30rem 18rem at 85% 10%, rgba(255, 200, 140, 0.35), transparent 60%);
-  pointer-events: none;
-}
-.home-hero-bg > * {
-  position: relative;
-  z-index: 1;
-}
-.home-skyline {
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  height: 34vh;
-  min-height: 12rem;
-  max-height: 20rem;
-  color: #2570f5;
-  opacity: 0.16;
-  pointer-events: none;
-}
-
-/* ダッシュボード類（アフター会社・ハウスメーカー/工務店・居住者マイページ）の背景。
-   データ画面としての読みやすさは保ちつつ、うっすら暖色を混ぜて「家」らしい温度感を出す。
-   fixed指定で長いスクロールページでも常に画面全体に均一にかかる。 */
-.dashboard-bg {
-  background-color: #f6f5f2;
-  background-image:
-    radial-gradient(46rem 26rem at 100% -8%, rgba(37, 112, 245, 0.06), transparent 60%),
-    radial-gradient(40rem 24rem at -6% 6%, rgba(255, 176, 89, 0.09), transparent 60%);
-  background-attachment: fixed;
-}
-
-/* 居住者・工務店向け公開フォームなど、縦に長くなりがちなページ用の温かみ背景。
-   （装飾ブロブを使わず fixed グラデーションのみなので、どれだけ長くても崩れない） */
-.warm-bg {
-  background-color: #fbf7f0;
-  background-image: linear-gradient(180deg, #fdf6ec 0%, #fbf2e4 40%, #f7ead6 100%);
-  background-attachment: fixed;
-}
-
-/* ヒーローバナー内に敷く、白っぽいうっすらとした家並みシルエット */
-.hero-skyline {
-  position: absolute;
-  right: 0;
-  bottom: 0;
-  width: 60%;
-  height: 100%;
-  color: white;
-  opacity: 0.12;
+  bottom: -4rem;
+  right: 4rem;
+  width: 8rem;
+  height: 8rem;
+  border-radius: 9999px;
+  background: rgba(255, 255, 255, 0.06);
   pointer-events: none;
 }

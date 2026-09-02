@@ -40,7 +40,7 @@ export default function MakerDashboardLayout({
   ];
 
   return (
-    <div className="min-h-screen dashboard-bg">
+    <div className="min-h-screen app-shell-bg">
       <header className="bg-white/95 backdrop-blur-sm border-b border-slate-200/70 px-4 md:px-8 py-4 flex items-center justify-between sticky top-0 z-10">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-brand-500 to-brand-700 shadow-md shadow-brand-600/25 flex items-center justify-center shrink-0">
