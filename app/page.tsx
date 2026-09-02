@@ -1,9 +1,11 @@
 import Link from "next/link";
 import { ClipboardCheck, Search, Building, UserPlus, User, Wrench } from "lucide-react";
+import HouseSkyline from "@/components/HouseSkyline";
 
 export default function Home() {
   return (
-    <main className="min-h-screen flex items-center justify-center px-6 py-14">
+    <main className="min-h-screen flex items-center justify-center px-6 py-14 home-hero-bg">
+      <HouseSkyline className="home-skyline" />
       <div className="max-w-md w-full space-y-8">
         <div className="text-center space-y-3">
           <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-gradient-to-br from-brand-500 to-brand-700 shadow-lg shadow-brand-600/30 mb-1">
