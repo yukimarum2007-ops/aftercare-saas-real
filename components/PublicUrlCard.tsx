@@ -25,7 +25,7 @@ export default function PublicUrlCard({ companyId }: { companyId: string }) {
         <Link2 size={20} />
       </div>
       <div className="flex-1 min-w-0">
-        <p className="text-xs text-slate-400">施主・工務店にお渡しする受付フォームURL</p>
+        <p className="text-xs text-slate-400">居住者・工務店にお渡しする受付フォームURL</p>
         <p className="text-sm font-bold text-slate-700 truncate">{url}</p>
       </div>
       <button onClick={copy} className="btn-secondary !px-3 !py-2 !text-sm shrink-0">

@@ -60,7 +60,7 @@ export const STATUS_LABEL: Record<RequestStatus, string> = {
 };
 
 export const SOURCE_LABEL: Record<RequestSource, string> = {
-  homeowner: "施主直接",
+  homeowner: "居住者直接",
   house_maker: "ハウスメーカー・工務店経由",
   partner: "工務店経由",
 };
@@ -74,7 +74,7 @@ export const STATUS_COLOR: Record<RequestStatus, string> = {
 export type AffiliationStatus = "pending" | "approved" | "rejected";
 
 // ハウスメーカーと工務店は、アフター会社から見ると「連携先」として同じ立場・
-// 同じ機能（提携申請の承認、案件の代理登録、施主様との連携）を持つため、
+// 同じ機能（提携申請の承認、案件の代理登録、居住者様との連携）を持つため、
 // 同一のテーブル（house_makers）を共有し、builder_type で表示上の種別のみ分ける。
 export type BuilderType = "house_maker" | "contractor";
 
@@ -140,7 +140,7 @@ export interface Customer {
   created_at: string;
 }
 
-// 施主 ⇔ アフター会社 / ハウスメーカー・工務店 の連携申請
+// 居住者 ⇔ アフター会社 / ハウスメーカー・工務店 の連携申請
 // どちらの側からでも申請でき（requested_by）、申請していない側が承認する。
 export type OrgType = "company" | "house_maker";
 export type LinkRequester = "customer" | "org";
@@ -159,13 +159,13 @@ export interface CustomerOrgLink {
   house_makers?: { name: string; builder_type?: BuilderType };
 }
 
-// 予約(依頼)完了時に、関係する3者（施主・アフター会社・ハウスメーカー/工務店）の
+// 予約(依頼)完了時に、関係する3者（居住者・アフター会社・ハウスメーカー/工務店）の
 // 登録メールアドレス宛に送られる通知。実際のメール送信は行わず、各アカウントの
 // 「通知」画面で確認できるモック実装。
 export interface NotificationRecord {
   id: string;
   email: string;
-  recipient_label: string; // "施主様" / "アフター会社" / "ハウスメーカー" / "工務店"
+  recipient_label: string; // "居住者様" / "アフター会社" / "ハウスメーカー" / "工務店"
   subject: string;
   body: string;
   request_id: string;

@@ -42,7 +42,7 @@ import {
 // 戻ります。本番のデータベースに接続する際は、この store.tsx の
 // 各関数を実際のAPI呼び出しに置き換えてください。
 //
-// ハウスメーカーと工務店は、アフター会社・施主様どちらから見ても
+// ハウスメーカーと工務店は、アフター会社・居住者様どちらから見ても
 // 「連携先」として同じ立場・同じ機能を持つため、house_maker という
 // 型名/アカウント種別を共有し、HouseMaker.builder_type で表示上の
 // 種別（ハウスメーカー / 工務店）のみを分けています。
@@ -190,14 +190,14 @@ interface StoreState {
   // 提携の解除・申請の取り消し（承認済み/申請中どちらの状態でも、どちらの側からでも削除できる）
   removeAffiliation: (affiliationId: string) => void;
 
-  // 施主様 ⇔ アフター会社/ハウスメーカー・工務店 の連携
-  // 会社・ハウスメーカー/工務店側が電話番号で施主様を検索して招待する
+  // 居住者様 ⇔ アフター会社/ハウスメーカー・工務店 の連携
+  // 会社・ハウスメーカー/工務店側が電話番号で居住者様を検索して招待する
   inviteCustomerByPhone: (phone: string) => { ok: boolean; message?: string };
-  // 施主様側が自分で連携申請を送る（新規登録後、マイページからいつでも）
+  // 居住者様側が自分で連携申請を送る（新規登録後、マイページからいつでも）
   requestCustomerOrgLink: (orgType: OrgType, orgId: string) => { ok: boolean; message?: string };
   // 申請されていない側が承認/却下する
   updateCustomerOrgLinkStatus: (linkId: string, status: AffiliationStatus) => void;
-  // 連携の解除（承認済み/申請中どちらの状態でも、施主様・会社・ハウスメーカー/工務店の
+  // 連携の解除（承認済み/申請中どちらの状態でも、居住者様・会社・ハウスメーカー/工務店の
   // どちらからでも削除できる）
   removeCustomerOrgLink: (linkId: string) => void;
 
@@ -597,10 +597,10 @@ export function MockDataProvider({ children }: { children: React.ReactNode }) {
       const companyAccount = accounts.find((a) => a.type === "company" && a.refId === request.company_id);
       push(companyAccount?.email, "アフター会社");
 
-      // 施主様（アカウントを持っている場合のみ）
+      // 居住者様（アカウントを持っている場合のみ）
       if (request.customer_id) {
         const custAccount = customerAccounts.find((a) => a.customerId === request.customer_id);
-        push(custAccount?.email, "施主様");
+        push(custAccount?.email, "居住者様");
       }
 
       // 案件を登録したハウスメーカー/工務店
@@ -612,7 +612,7 @@ export function MockDataProvider({ children }: { children: React.ReactNode }) {
         notifiedHouseMakerIds.add(request.house_maker_id);
       }
 
-      // 施主様が承認済みで連携しているハウスメーカー/工務店にもお知らせする
+      // 居住者様が承認済みで連携しているハウスメーカー/工務店にもお知らせする
       if (request.customer_id) {
         customerOrgLinks
           .filter(
@@ -803,7 +803,7 @@ export function MockDataProvider({ children }: { children: React.ReactNode }) {
 
       const customer = customers.find((c) => c.phone === phone);
       if (!customer) {
-        return { ok: false, message: "この電話番号でご登録の施主様が見つかりませんでした。" };
+        return { ok: false, message: "この電話番号でご登録の居住者様が見つかりませんでした。" };
       }
 
       const existing = customerOrgLinks.find(

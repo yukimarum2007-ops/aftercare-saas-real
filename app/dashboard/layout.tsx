@@ -35,7 +35,7 @@ export default function DashboardLayout({
     { href: "/dashboard", label: "ダッシュボード", icon: LayoutDashboard },
     { href: "/dashboard/calendar", label: "空き枠設定", icon: CalendarDays },
     { href: "/dashboard/partners", label: "連携工務店", icon: Users },
-    { href: "/dashboard/customers", label: "施主様管理", icon: UserCog },
+    { href: "/dashboard/customers", label: "居住者様管理", icon: UserCog },
   ];
 
   return (

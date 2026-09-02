@@ -108,7 +108,7 @@ export default function CustomerDashboardPage() {
   return (
     <div className="max-w-2xl mx-auto space-y-6">
       <DashboardHero
-        eyebrow="施主様マイページ"
+        eyebrow="居住者様マイページ"
         title={`${currentUser && currentUser.type === "customer" ? currentUser.fullName : ""} 様`}
         description="連携状況の確認や、アフター会社への依頼がここから行えます。"
         icon={<User className="text-white" size={26} />}

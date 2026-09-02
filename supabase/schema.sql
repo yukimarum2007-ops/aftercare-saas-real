@@ -397,7 +397,7 @@ insert into storage.buckets (id, name, public)
 values ('request-photos', 'request-photos', true)
 on conflict (id) do nothing;
 
--- 誰でもアップロード可（施主・工務店・ハウスメーカー担当者は未ログイン/多様なため）
+-- 誰でもアップロード可（居住者・工務店・ハウスメーカー担当者は未ログイン/多様なため）
 create policy "request_photos_public_insert"
   on storage.objects for insert
   with check (bucket_id = 'request-photos');

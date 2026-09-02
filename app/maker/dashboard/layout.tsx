@@ -36,7 +36,7 @@ export default function MakerDashboardLayout({
   const navItems = [
     { href: "/maker/dashboard", label: "提携申請", icon: LayoutDashboard },
     { href: "/maker/dashboard/new-request", label: "案件登録", icon: FilePlus2 },
-    { href: "/maker/dashboard/customers", label: "施主様管理", icon: UserCog },
+    { href: "/maker/dashboard/customers", label: "居住者様管理", icon: UserCog },
   ];
 
   return (

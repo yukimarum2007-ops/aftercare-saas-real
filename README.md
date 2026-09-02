@@ -16,25 +16,25 @@ Next.js（App Router）+ Tailwind CSS のみで構築した、外部データベ
 | `/dashboard` | ダッシュボード（案件一覧・カレンダー・提携ステータス） | 必須 |
 | `/dashboard/calendar` | 空き枠（午前/午後）設定 | 必須 |
 | `/dashboard/partners` | 簡易な共有リンク発行（旧・工務店連携機能。下記参照） | 必須 |
-| `/dashboard/customers` | アフター会社用：施主様の連携申請の確認・承認、電話番号での招待 | 必須 |
+| `/dashboard/customers` | アフター会社用：居住者様の連携申請の確認・承認、電話番号での招待 | 必須 |
 | `/dashboard/profile` | アフター会社の会社情報・ログイン情報の編集 | 必須 |
 | `/dashboard/notifications` | アフター会社宛の予約完了通知一覧（モック） | 必須 |
-| `/request/[company_id]` | 施主・工務店の受付フォーム（未ログインでも利用可） | 不要 |
+| `/request/[company_id]` | 居住者・工務店の受付フォーム（未ログインでも利用可） | 不要 |
 | `/status` , `/status/[code]` | 対応状況確認（受付ID入力） | 不要 |
 | `/signup` | アフター会社の新規会員登録（ハウスメーカー・工務店選択・提携申請） | 不要 |
 | `/maker/login` | ハウスメーカー・工務店ログイン（共通） | - |
 | `/maker/signup` | ハウスメーカー・工務店の新規会員登録（種別選択） | 不要 |
 | `/maker/dashboard` | 提携アフター会社の確認・承認、新規提携申請の送信 | 必須 |
 | `/maker/dashboard/new-request` | 承認済みアフター会社への案件直接登録 | 必須 |
-| `/maker/dashboard/customers` | 施主様の連携申請の確認・承認、電話番号での招待 | 必須 |
+| `/maker/dashboard/customers` | 居住者様の連携申請の確認・承認、電話番号での招待 | 必須 |
 | `/maker/dashboard/profile` | ハウスメーカー・工務店の会社情報・ログイン情報の編集 | 必須 |
 | `/maker/dashboard/notifications` | ハウスメーカー・工務店宛の予約完了通知一覧（モック） | 必須 |
-| `/customer/login` | 施主様ログイン | - |
-| `/customer/signup` | 施主様の新規会員登録（ハウスメーカー・工務店/アフター会社を任意で選択） | 不要 |
-| `/customer/dashboard` | 施主様マイページ：連携状況の確認・承認・解除、新規連携申請、電話発信、依頼案件の確認 | 必須 |
-| `/customer/dashboard/new-request` | 施主様がアフター会社へ直接依頼を登録 | 必須 |
-| `/customer/dashboard/profile` | 施主様プロフィール編集（氏名・連絡先・パスワード） | 必須 |
-| `/customer/dashboard/notifications` | 施主様宛の予約完了通知一覧（モック） | 必須 |
+| `/customer/login` | 居住者様ログイン | - |
+| `/customer/signup` | 居住者様の新規会員登録（ハウスメーカー・工務店/アフター会社を任意で選択） | 不要 |
+| `/customer/dashboard` | 居住者様マイページ：連携状況の確認・承認・解除、新規連携申請、電話発信、依頼案件の確認 | 必須 |
+| `/customer/dashboard/new-request` | 居住者様がアフター会社へ直接依頼を登録 | 必須 |
+| `/customer/dashboard/profile` | 居住者様プロフィール編集（氏名・連絡先・パスワード） | 必須 |
+| `/customer/dashboard/notifications` | 居住者様宛の予約完了通知一覧（モック） | 必須 |
 
 ---
 
@@ -45,12 +45,12 @@ Next.js（App Router）+ Tailwind CSS のみで構築した、外部データベ
 | アフター会社（サンプル住設アフターサービス株式会社） | `company@example.com` | `password123` |
 | ハウスメーカー（サンプルハウスメーカー株式会社） | `maker@example.com` | `password123` |
 | 工務店（みらい工務店株式会社） | `contractor@example.com` | `password123` |
-| 施主様（田中 一郎） | `customer@example.com` | `password123` |
+| 居住者様（田中 一郎） | `customer@example.com` | `password123` |
 
 ### ハウスメーカーと工務店は同じ立場
 
-ハウスメーカーと工務店は、アフター会社・施主様どちらから見ても「連携先」として同じ機能
-（アフター会社との提携申請・承認、施主様との連携申請・承認、案件の代理登録）を持つため、
+ハウスメーカーと工務店は、アフター会社・居住者様どちらから見ても「連携先」として同じ機能
+（アフター会社との提携申請・承認、居住者様との連携申請・承認、案件の代理登録）を持つため、
 ログイン(`/maker/login`)・新規登録(`/maker/signup`)ページは共通です。登録時に「ハウスメーカー」
 か「工務店」かを選ぶだけで、以降の画面・機能はまったく同じです。
 
@@ -63,17 +63,17 @@ Next.js（App Router）+ Tailwind CSS のみで構築した、外部データベ
   `/maker/signup` や `/maker/dashboard` からハウスメーカー・工務店側が申請することもできます。
   申請していない側が `/dashboard`（アフター会社）または `/maker/dashboard`（ハウスメーカー・
   工務店）で承認・却下します。
-- **施主様 ⇔ アフター会社/ハウスメーカー・工務店**: `/customer/signup` で施主様が申請するほか、
+- **居住者様 ⇔ アフター会社/ハウスメーカー・工務店**: `/customer/signup` で居住者様が申請するほか、
   `/customer/dashboard` からいつでも新しい連携を申請できます。逆にアフター会社・ハウスメーカー・
-  工務店側も `/dashboard/customers` や `/maker/dashboard/customers` で施主様の電話番号を入力して
-  招待でき、この場合は施主様が `/customer/dashboard` で承認・却下します。
-- どちらの連携も、承認の有無にかかわらず施主様は好きなアフター会社に直接依頼を送れます
-  （連携はあくまで「どの会社がどの施主様を担当しているか」を管理するための機能です）。
+  工務店側も `/dashboard/customers` や `/maker/dashboard/customers` で居住者様の電話番号を入力して
+  招待でき、この場合は居住者様が `/customer/dashboard` で承認・却下します。
+- どちらの連携も、承認の有無にかかわらず居住者様は好きなアフター会社に直接依頼を送れます
+  （連携はあくまで「どの会社がどの居住者様を担当しているか」を管理するための機能です）。
 
 ### 訪問希望時間について
 
 アフター会社が空き枠設定で切り替えられるのは引き続き「午前/午後」の単位です。
-そのうえで、依頼フォーム（施主直接・工務店経由・ハウスメーカー経由のいずれも）では、
+そのうえで、依頼フォーム（居住者直接・工務店経由・ハウスメーカー経由のいずれも）では、
 選んだ午前/午後の中でさらに30分刻みの具体的な時間を選択できます。
 
 - 午前: 9:00 / 9:30 / 10:00 / 10:30 / 11:00 / 11:30
@@ -84,30 +84,30 @@ Next.js（App Router）+ Tailwind CSS のみで構築した、外部データベ
 
 ### プロフィール編集
 
-施主様は新規登録時だけでなく、`/customer/dashboard/profile` からいつでも氏名・電話番号・
+居住者様は新規登録時だけでなく、`/customer/dashboard/profile` からいつでも氏名・電話番号・
 住所・メールアドレス・パスワードを変更できます（マイページ右上の歯車アイコンから移動できます）。
 同様に、アフター会社は `/dashboard/profile`、ハウスメーカー・工務店は `/maker/dashboard/profile`
 から、会社名・電話番号・住所・担当者名・ログイン用メールアドレス・パスワードをいつでも変更できます。
 
 ### 電話をかける
 
-施主様マイページ(`/customer/dashboard`)では、連携が承認済みのアフター会社・ハウスメーカー・
+居住者様マイページ(`/customer/dashboard`)では、連携が承認済みのアフター会社・ハウスメーカー・
 工務店それぞれに、登録された電話番号への発信ボタン（`tel:` リンク）が表示されます。予約の
-仕方が分からない・不安、といった施主様が、そのままワンタップで電話をかけられます。
+仕方が分からない・不安、といった居住者様が、そのままワンタップで電話をかけられます。
 
 ### 予約完了通知（モック）
 
-施主様がアフター会社に依頼（予約）を送信すると、以下の3者それぞれの登録メールアドレス宛に
+居住者様がアフター会社に依頼（予約）を送信すると、以下の3者それぞれの登録メールアドレス宛に
 通知が作成されます（実際のメール送信は行わず、アプリ内の「通知」画面で確認する形のモックです。
 本番でメール送信する場合は `lib/store.tsx` の `notifyRequestCreated` を実際のメール送信APIに
 置き換えてください）。
 
 - 依頼を受け取ったアフター会社
-- 依頼した施主様（アカウントで依頼した場合）
-- その案件を代理登録した、または施主様と承認済みで連携しているハウスメーカー・工務店
+- 依頼した居住者様（アカウントで依頼した場合）
+- その案件を代理登録した、または居住者様と承認済みで連携しているハウスメーカー・工務店
 
 通知は `/dashboard/notifications`（アフター会社）、`/maker/dashboard/notifications`
-（ハウスメーカー・工務店）、`/customer/dashboard/notifications`（施主様）で確認できます。
+（ハウスメーカー・工務店）、`/customer/dashboard/notifications`（居住者様）で確認できます。
 
 ### デザインについて
 
@@ -130,7 +130,7 @@ Noto Sans JPフォント、グラデーションボタン、柔らかい影の�
 
 - アフター会社 ⇔ ハウスメーカー/工務店: `/dashboard`、`/maker/dashboard` それぞれの
   一覧にあるリンク解除アイコンボタンから
-- 施主様 ⇔ アフター会社/ハウスメーカー・工務店: `/customer/dashboard`（施主様側）、
+- 居住者様 ⇔ アフター会社/ハウスメーカー・工務店: `/customer/dashboard`（居住者様側）、
   `/dashboard/customers`（アフター会社側）、`/maker/dashboard/customers`
   （ハウスメーカー・工務店側）のいずれからでも
 
@@ -187,7 +187,7 @@ app/
     page.tsx                        ダッシュボード（提携ハウスメーカー・工務店の管理含む）
     calendar/page.tsx
     partners/page.tsx               簡易共有リンク（旧・工務店連携機能）
-    customers/page.tsx              施主様の連携申請 管理・招待・解除
+    customers/page.tsx              居住者様の連携申請 管理・招待・解除
     profile/page.tsx                会社情報の編集
     notifications/page.tsx          予約完了通知の一覧
   maker/                            ハウスメーカー・工務店 共通
@@ -197,10 +197,10 @@ app/
       layout.tsx
       page.tsx                      提携アフター会社の管理・新規申請・解除
       new-request/page.tsx
-      customers/page.tsx            施主様の連携申請 管理・招待・解除
+      customers/page.tsx            居住者様の連携申請 管理・招待・解除
       profile/page.tsx              会社情報の編集
       notifications/page.tsx        予約完了通知の一覧
-  customer/                         施主様
+  customer/                         居住者様
     login/page.tsx
     signup/page.tsx
     dashboard/                      要ログイン
@@ -209,7 +209,7 @@ app/
       new-request/page.tsx
       profile/page.tsx
       notifications/page.tsx        予約完了通知の一覧
-  request/[company_id]/page.tsx     施主・工務店向け 公開受付フォーム
+  request/[company_id]/page.tsx     居住者・工務店向け 公開受付フォーム
   status/page.tsx                   受付ID入力画面
   status/[code]/page.tsx            対応状況確認画面
 components/

@@ -77,7 +77,7 @@ export default function CustomerSignupPage() {
     <main className="min-h-screen flex items-center justify-center px-6 py-10 bg-brand-50 auth-bg">
       <div className="max-w-sm w-full card p-8 space-y-6">
         <div className="text-center space-y-1">
-          <h1 className="text-xl font-bold text-slate-800">施主様 新規会員登録</h1>
+          <h1 className="text-xl font-bold text-slate-800">居住者様 新規会員登録</h1>
           <p className="text-sm text-slate-500">お住まいの点検・修理依頼をかんたんに管理できます</p>
         </div>
 

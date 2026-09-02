@@ -62,14 +62,14 @@ export default function MakerCustomersPage() {
   return (
     <div className="max-w-3xl mx-auto space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-slate-800">施主様の管理</h1>
-        <p className="text-slate-500 mt-1">施主様からの連携申請の確認・承認や、電話番号での招待ができます。</p>
+        <h1 className="text-2xl font-bold text-slate-800">居住者様の管理</h1>
+        <p className="text-slate-500 mt-1">居住者様からの連携申請の確認・承認や、電話番号での招待ができます。</p>
       </div>
 
       <form onSubmit={handleInvite} className="card p-5 space-y-3">
         <p className="font-bold text-slate-700 flex items-center gap-2">
           <UserPlus size={18} />
-          電話番号で施主様を招待する
+          電話番号で居住者様を招待する
         </p>
         <div className="flex gap-2">
           <input
@@ -84,7 +84,7 @@ export default function MakerCustomersPage() {
           </button>
         </div>
         <p className="text-xs text-slate-400">
-          すでにアプリに会員登録している施主様の電話番号を入力すると、連携の承認依頼を送れます。
+          すでにアプリに会員登録している居住者様の電話番号を入力すると、連携の承認依頼を送れます。
         </p>
         {inviteError && <p className="text-sm font-bold text-red-600 bg-red-50 rounded-lg px-3 py-2">{inviteError}</p>}
         {inviteMessage && (
@@ -109,7 +109,7 @@ export default function MakerCustomersPage() {
         {filtered.length === 0 && (
           <div className="empty-state">
             <Users size={28} className="text-slate-300" />
-            該当する施主様はいません
+            該当する居住者様はいません
           </div>
         )}
         {filtered.map((l) => (
@@ -130,7 +130,7 @@ export default function MakerCustomersPage() {
               <span
                 className={`inline-flex items-center gap-1 mt-2 rounded-full border px-2.5 py-0.5 text-xs font-bold ${AFFILIATION_STATUS_COLOR[l.status]}`}
               >
-                {l.status === "pending" && l.requested_by === "org" ? "施主様の承認待ち" : AFFILIATION_STATUS_LABEL[l.status]}
+                {l.status === "pending" && l.requested_by === "org" ? "居住者様の承認待ち" : AFFILIATION_STATUS_LABEL[l.status]}
               </span>
             </div>
             {l.status === "pending" && l.requested_by === "customer" ? (
@@ -152,7 +152,7 @@ export default function MakerCustomersPage() {
               </div>
             ) : (
               <button
-                onClick={() => handleRemoveLink(l.id, l.customer?.name ?? "この施主様")}
+                onClick={() => handleRemoveLink(l.id, l.customer?.name ?? "この居住者様")}
                 className="p-2 rounded-lg text-slate-400 hover:bg-slate-100 hover:text-red-500 transition-colors shrink-0"
                 title={l.status === "approved" ? "連携を解除" : "申請を取り消す"}
                 aria-label={l.status === "approved" ? "連携を解除" : "申請を取り消す"}

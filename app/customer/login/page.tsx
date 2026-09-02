@@ -22,7 +22,7 @@ export default function CustomerLoginPage() {
       return;
     }
     if (result.redirectTo !== "/customer/dashboard") {
-      setError("このアカウントは施主様用のアカウントとして登録されていません。");
+      setError("このアカウントは居住者様用のアカウントとして登録されていません。");
       return;
     }
     router.push("/customer/dashboard");
@@ -32,7 +32,7 @@ export default function CustomerLoginPage() {
     <main className="min-h-screen flex items-center justify-center px-6 bg-brand-50 auth-bg">
       <div className="max-w-sm w-full card p-8 space-y-6">
         <div className="text-center space-y-1">
-          <h1 className="text-xl font-bold text-slate-800">施主様ログイン</h1>
+          <h1 className="text-xl font-bold text-slate-800">居住者様ログイン</h1>
           <p className="text-sm text-slate-500">依頼状況の確認・新しい依頼の登録ができます</p>
         </div>
 

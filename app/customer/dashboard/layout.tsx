@@ -35,7 +35,7 @@ export default function CustomerDashboardLayout({
             <User className="text-white" size={18} />
           </div>
           <div>
-            <p className="text-[11px] font-bold text-slate-400">施主様マイページ</p>
+            <p className="text-[11px] font-bold text-slate-400">居住者様マイページ</p>
             <p className="font-bold text-slate-800">{currentUser.fullName} 様</p>
           </div>
         </div>

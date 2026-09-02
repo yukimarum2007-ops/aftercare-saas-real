@@ -121,7 +121,7 @@ export default function MakerNewRequestPage() {
     <div className="max-w-lg mx-auto space-y-6">
       <div>
         <h1 className="text-2xl font-bold text-slate-800">案件を登録する</h1>
-        <p className="text-slate-500 mt-1">承認済みのアフター会社に対して、施主様の代理で案件を登録できます。</p>
+        <p className="text-slate-500 mt-1">承認済みのアフター会社に対して、居住者様の代理で案件を登録できます。</p>
       </div>
 
       {approvedCompanies.length === 0 ? (
