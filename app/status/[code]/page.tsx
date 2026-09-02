@@ -22,7 +22,7 @@ export default function StatusResultPage() {
 
   if (!result) {
     return (
-      <div className="min-h-screen bg-brand-50 flex items-center justify-center px-6 text-center">
+      <div className="min-h-screen bg-brand-50 flex items-center justify-center px-6 text-center auth-bg">
         <div className="max-w-sm w-full card p-8">
           <p className="text-slate-600 font-bold">該当する受付情報が見つかりませんでした。</p>
           <p className="text-slate-400 text-sm mt-2">受付IDをご確認の上、再度お試しください。</p>
@@ -32,7 +32,7 @@ export default function StatusResultPage() {
   }
 
   return (
-    <div className="min-h-screen bg-brand-50 flex items-center justify-center px-6 py-10">
+    <div className="min-h-screen bg-brand-50 flex items-center justify-center px-6 py-10 auth-bg">
       <div className="max-w-sm w-full card p-8 space-y-8">
         <div className="text-center space-y-1">
           <p className="text-sm text-slate-400">{company?.name}</p>

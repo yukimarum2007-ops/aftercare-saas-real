@@ -9,7 +9,7 @@ import {
   AFFILIATION_STATUS_COLOR,
   BUILDER_TYPE_LABEL,
 } from "@/lib/types";
-import { Building, Home as HomeIcon, PlusCircle, Link2, Check, X } from "lucide-react";
+import { Building, Home as HomeIcon, PlusCircle, Link2, Check, X, Inbox } from "lucide-react";
 
 export default function CustomerDashboardPage() {
   const { currentUser, customerOrgLinks, companies, houseMakers, requests, requestCustomerOrgLink, updateCustomerOrgLinkStatus } =
@@ -203,12 +203,15 @@ export default function CustomerDashboardPage() {
         <p className="font-bold text-slate-700 mb-4">依頼した案件</p>
         <div className="space-y-2">
           {myRequests.length === 0 && (
-            <p className="text-slate-400 text-sm py-8 text-center">まだ依頼はありません</p>
+            <div className="empty-state">
+              <Inbox size={28} className="text-slate-300" />
+              まだ依頼はありません
+            </div>
           )}
           {myRequests.map((r) => {
             const company = companies.find((c) => c.id === r.company_id);
             return (
-              <div key={r.id} className="rounded-xl border border-slate-200 p-4">
+              <div key={r.id} className="rounded-xl border border-slate-200 p-4 transition-colors hover:border-brand-200">
                 <div className="flex items-center justify-between gap-2">
                   <p className="font-bold text-slate-800 truncate">{company?.name ?? "―"}</p>
                   <StatusBadge status={r.status} />

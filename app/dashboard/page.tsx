@@ -15,10 +15,18 @@ import StatusBadge from "@/components/StatusBadge";
 import RequestModal from "@/components/RequestModal";
 import PublicUrlCard from "@/components/PublicUrlCard";
 import { getMonthGrid, toDateKey, formatMonthLabel, WEEKDAY_LABELS } from "@/lib/date";
-import { Inbox, CalendarClock, CheckCircle2, ChevronLeft, ChevronRight, Check, X, Send } from "lucide-react";
+import { Inbox, CalendarClock, CheckCircle2, ChevronLeft, ChevronRight, Check, X, Send, Unlink } from "lucide-react";
 
 export default function DashboardPage() {
-  const { currentUser, requests, affiliations, houseMakers, requestAffiliation, updateAffiliationStatus } = useStore();
+  const {
+    currentUser,
+    requests,
+    affiliations,
+    houseMakers,
+    requestAffiliation,
+    updateAffiliationStatus,
+    removeAffiliation,
+  } = useStore();
   const companyId = currentUser?.type === "company" ? currentUser.companyId : "";
 
   const [filter, setFilter] = useState<RequestStatus | "all">("all");
@@ -58,6 +66,12 @@ export default function DashboardPage() {
       return;
     }
     setNewHouseMakerId("");
+  }
+
+  function handleRemoveAffiliation(id: string, name: string) {
+    if (window.confirm(`${name} との提携を解除しますか？`)) {
+      removeAffiliation(id);
+    }
   }
 
   const counts = useMemo(() => {
@@ -119,11 +133,21 @@ export default function DashboardPage() {
                   </button>
                 </div>
               ) : (
-                <span
-                  className={`inline-flex items-center rounded-full border px-3 py-1 text-sm font-bold shrink-0 ${AFFILIATION_STATUS_COLOR[a.status]}`}
-                >
-                  {a.status === "pending" ? "先方の承認待ち" : AFFILIATION_STATUS_LABEL[a.status]}
-                </span>
+                <div className="flex items-center gap-2 shrink-0">
+                  <span
+                    className={`inline-flex items-center rounded-full border px-3 py-1 text-sm font-bold ${AFFILIATION_STATUS_COLOR[a.status]}`}
+                  >
+                    {a.status === "pending" ? "先方の承認待ち" : AFFILIATION_STATUS_LABEL[a.status]}
+                  </span>
+                  <button
+                    onClick={() => handleRemoveAffiliation(a.id, a.house_makers?.name ?? "この提携先")}
+                    className="p-2 rounded-lg text-slate-400 hover:bg-slate-100 hover:text-red-500 transition-colors"
+                    title={a.status === "approved" ? "提携を解除" : "申請を取り消す"}
+                    aria-label={a.status === "approved" ? "提携を解除" : "申請を取り消す"}
+                  >
+                    <Unlink size={16} />
+                  </button>
+                </div>
               )}
             </div>
           ))}
@@ -246,12 +270,17 @@ export default function DashboardPage() {
             案件一覧 {filter !== "all" && `（${STATUS_LABEL[filter]}）`}
           </p>
           <div className="space-y-2 max-h-[420px] overflow-y-auto">
-            {filtered.length === 0 && <p className="text-slate-400 text-sm py-8 text-center">案件はありません</p>}
+            {filtered.length === 0 && (
+              <div className="empty-state">
+                <Inbox size={28} className="text-slate-300" />
+                案件はありません
+              </div>
+            )}
             {filtered.map((r) => (
               <button
                 key={r.id}
                 onClick={() => setSelected(r)}
-                className="w-full text-left rounded-xl border border-slate-200 p-4 hover:border-brand-300 hover:bg-brand-50/40 transition"
+                className="w-full text-left list-row p-4"
               >
                 <div className="flex items-center justify-between gap-2">
                   <p className="font-bold text-slate-800 truncate">{r.customer_name} 様</p>

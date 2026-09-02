@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useStore } from "@/lib/store";
-import { Plus, Copy, Check, Building2 } from "lucide-react";
+import { Plus, Copy, Check, Building2, Users } from "lucide-react";
 
 export default function PartnersPage() {
   const { currentUser, partners, addPartner } = useStore();
@@ -76,7 +76,10 @@ export default function PartnersPage() {
 
       <div className="space-y-3">
         {companyPartners.length === 0 && (
-          <p className="text-slate-400 text-center py-10">まだ登録された工務店はありません</p>
+          <div className="empty-state">
+            <Users size={28} className="text-slate-300" />
+            まだ登録された工務店はありません
+          </div>
         )}
         {companyPartners.map((p) => (
           <div key={p.id} className="card p-4 flex items-center gap-4">

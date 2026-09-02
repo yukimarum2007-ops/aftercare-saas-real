@@ -7,10 +7,11 @@ import {
   AFFILIATION_STATUS_LABEL,
   AFFILIATION_STATUS_COLOR,
 } from "@/lib/types";
-import { Check, X, Clock, Building2, Send } from "lucide-react";
+import { Check, X, Clock, Building2, Send, Unlink, Inbox } from "lucide-react";
 
 export default function MakerDashboardPage() {
-  const { currentUser, affiliations, companies, updateAffiliationStatus, requestAffiliation } = useStore();
+  const { currentUser, affiliations, companies, updateAffiliationStatus, requestAffiliation, removeAffiliation } =
+    useStore();
   const houseMakerId = currentUser?.type === "house_maker" ? currentUser.houseMakerId : "";
 
   const [filter, setFilter] = useState<AffiliationStatus | "all">("pending");
@@ -52,6 +53,12 @@ export default function MakerDashboardPage() {
       return;
     }
     setNewCompanyId("");
+  }
+
+  function handleRemoveAffiliation(id: string, name: string) {
+    if (window.confirm(`${name} との提携を解除しますか？`)) {
+      removeAffiliation(id);
+    }
   }
 
   return (
@@ -103,7 +110,10 @@ export default function MakerDashboardPage() {
 
       <div className="space-y-3">
         {filtered.length === 0 && (
-          <p className="text-slate-400 text-sm py-10 text-center">該当する申請はありません</p>
+          <div className="empty-state">
+            <Inbox size={28} className="text-slate-300" />
+            該当する申請はありません
+          </div>
         )}
         {filtered.map((a) => (
           <div key={a.id} className="card p-4 md:p-5 flex items-center gap-4">
@@ -119,7 +129,7 @@ export default function MakerDashboardPage() {
                 {a.status === "pending" && a.requested_by === "house_maker" ? "先方の承認待ち" : AFFILIATION_STATUS_LABEL[a.status]}
               </span>
             </div>
-            {a.status === "pending" && a.requested_by === "company" && (
+            {a.status === "pending" && a.requested_by === "company" ? (
               <div className="flex gap-2 shrink-0">
                 <button
                   onClick={() => updateAffiliationStatus(a.id, "approved")}
@@ -136,6 +146,15 @@ export default function MakerDashboardPage() {
                   却下
                 </button>
               </div>
+            ) : (
+              <button
+                onClick={() => handleRemoveAffiliation(a.id, a.companies?.name ?? "この提携先")}
+                className="p-2 rounded-lg text-slate-400 hover:bg-slate-100 hover:text-red-500 transition-colors shrink-0"
+                title={a.status === "approved" ? "提携を解除" : "申請を取り消す"}
+                aria-label={a.status === "approved" ? "提携を解除" : "申請を取り消す"}
+              >
+                <Unlink size={18} />
+              </button>
             )}
           </div>
         ))}

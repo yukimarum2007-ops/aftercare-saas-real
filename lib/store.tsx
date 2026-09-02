@@ -166,6 +166,8 @@ interface StoreState {
   // 工務店なら companyId）を渡す。どちらからでも申請でき、申請していない側が承認する。
   requestAffiliation: (targetId: string) => { ok: boolean; message?: string };
   updateAffiliationStatus: (affiliationId: string, status: AffiliationStatus) => void;
+  // 提携の解除・申請の取り消し（承認済み/申請中どちらの状態でも、どちらの側からでも削除できる）
+  removeAffiliation: (affiliationId: string) => void;
 
   // 施主様 ⇔ アフター会社/ハウスメーカー・工務店 の連携
   // 会社・ハウスメーカー/工務店側が電話番号で施主様を検索して招待する
@@ -629,6 +631,10 @@ export function MockDataProvider({ children }: { children: React.ReactNode }) {
     );
   }, []);
 
+  const removeAffiliation = useCallback((affiliationId: string) => {
+    setAffiliations((prev) => prev.filter((a) => a.id !== affiliationId));
+  }, []);
+
   const inviteCustomerByPhone = useCallback<StoreState["inviteCustomerByPhone"]>(
     (phone) => {
       if (!currentUser || (currentUser.type !== "company" && currentUser.type !== "house_maker")) {
@@ -749,6 +755,7 @@ export function MockDataProvider({ children }: { children: React.ReactNode }) {
       updateRequestStatus,
       requestAffiliation,
       updateAffiliationStatus,
+      removeAffiliation,
       inviteCustomerByPhone,
       requestCustomerOrgLink,
       updateCustomerOrgLinkStatus,
@@ -780,6 +787,7 @@ export function MockDataProvider({ children }: { children: React.ReactNode }) {
       updateRequestStatus,
       requestAffiliation,
       updateAffiliationStatus,
+      removeAffiliation,
       inviteCustomerByPhone,
       requestCustomerOrgLink,
       updateCustomerOrgLinkStatus,

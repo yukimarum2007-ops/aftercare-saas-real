@@ -29,7 +29,7 @@ export default function MakerLoginPage() {
   }
 
   return (
-    <main className="min-h-screen flex items-center justify-center px-6 bg-brand-50">
+    <main className="min-h-screen flex items-center justify-center px-6 bg-brand-50 auth-bg">
       <div className="max-w-sm w-full card p-8 space-y-6">
         <div className="text-center space-y-1">
           <h1 className="text-xl font-bold text-slate-800">ハウスメーカー・工務店ログイン</h1>

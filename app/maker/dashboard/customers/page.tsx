@@ -7,7 +7,7 @@ import {
   AFFILIATION_STATUS_LABEL,
   AFFILIATION_STATUS_COLOR,
 } from "@/lib/types";
-import { Check, X, User, Phone, MapPin, UserPlus } from "lucide-react";
+import { Check, X, User, Phone, MapPin, UserPlus, Users } from "lucide-react";
 
 export default function MakerCustomersPage() {
   const { currentUser, customerOrgLinks, customers, updateCustomerOrgLinkStatus, inviteCustomerByPhone } = useStore();
@@ -100,7 +100,10 @@ export default function MakerCustomersPage() {
 
       <div className="space-y-3">
         {filtered.length === 0 && (
-          <p className="text-slate-400 text-sm py-10 text-center">該当する施主様はいません</p>
+          <div className="empty-state">
+            <Users size={28} className="text-slate-300" />
+            該当する施主様はいません
+          </div>
         )}
         {filtered.map((l) => (
           <div key={l.id} className="card p-4 md:p-5 flex items-center gap-4">

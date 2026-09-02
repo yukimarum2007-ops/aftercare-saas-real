@@ -47,7 +47,7 @@ export default function SignupPage() {
 
   if (done) {
     return (
-      <main className="min-h-screen flex items-center justify-center px-6 bg-brand-50">
+      <main className="min-h-screen flex items-center justify-center px-6 bg-brand-50 auth-bg">
         <div className="max-w-sm w-full card p-8 text-center space-y-5">
           <CheckCircle2 className="mx-auto text-emerald-500" size={56} />
           <div>
@@ -65,7 +65,7 @@ export default function SignupPage() {
   }
 
   return (
-    <main className="min-h-screen flex items-center justify-center px-6 py-10 bg-brand-50">
+    <main className="min-h-screen flex items-center justify-center px-6 py-10 bg-brand-50 auth-bg">
       <div className="max-w-sm w-full card p-8 space-y-6">
         <div className="text-center space-y-1">
           <h1 className="text-xl font-bold text-slate-800">新規会員登録</h1>

@@ -15,7 +15,7 @@ export default function StatusLookupPage() {
   }
 
   return (
-    <div className="min-h-screen bg-brand-50 flex items-center justify-center px-6">
+    <div className="min-h-screen bg-brand-50 flex items-center justify-center px-6 auth-bg">
       <div className="max-w-sm w-full card p-8 space-y-6">
         <div className="text-center space-y-1">
           <h1 className="text-xl font-bold text-slate-800">対応状況の確認</h1>
