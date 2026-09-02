@@ -33,12 +33,12 @@ export default function StatusResultPage() {
 
   return (
     <main className="min-h-screen app-shell-bg flex flex-col">
-      <div className="app-header-band px-6 pt-14 pb-16 text-center">
+      <div className="app-header-band px-6 pt-14 pb-10 text-center">
         <p className="text-sm text-white/70">{company?.name}</p>
         <h1 className="text-lg font-bold mt-1">受付ID: {result.tracking_code}</h1>
       </div>
 
-      <div className="flex-1 px-6 -mt-8 pb-10">
+      <div className="flex-1 px-6 pt-8 pb-10">
         <div className="max-w-sm mx-auto bg-white rounded-2xl shadow-lg shadow-slate-200/60 p-8">
           <div className="space-y-0">
             {STEPS.map((step, i) => {

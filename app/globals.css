@@ -39,11 +39,11 @@ button, a {
   @apply inline-flex items-center justify-center gap-2 rounded-2xl font-bold transition-all duration-200 active:scale-[0.97] disabled:opacity-50 disabled:pointer-events-none;
 }
 .btn-primary {
-  @apply btn-base text-white text-btn-lg px-6 py-4 shadow-lg shadow-brand-600/25 hover:shadow-xl hover:shadow-brand-600/30 hover:-translate-y-0.5;
-  background-image: linear-gradient(135deg, #2f7bff 0%, #2570f5 45%, #1a56d6 100%);
+  @apply btn-base text-white text-btn-lg px-6 py-4 shadow-lg shadow-brand-900/25 hover:shadow-xl hover:shadow-brand-900/30 hover:-translate-y-0.5;
+  background-image: linear-gradient(135deg, #2563eb 0%, #1a3a8f 100%);
 }
 .btn-primary:hover {
-  background-image: linear-gradient(135deg, #4a8bff 0%, #2f7bff 45%, #1a56d6 100%);
+  background-image: linear-gradient(135deg, #3b76f6 0%, #1e429e 100%);
 }
 .btn-secondary {
   @apply btn-base bg-white text-brand-700 border-2 border-slate-200 text-btn-lg px-6 py-4 shadow-sm hover:border-brand-300 hover:bg-brand-50 hover:-translate-y-0.5;
@@ -76,13 +76,14 @@ button, a {
 /* アプリらしい「色帯ヘッダー + 白カード」レイアウト用の背景。
    装飾は使わず、フラットな単色背景のみ（LINE・TVerのような明快さを優先）。 */
 .app-shell-bg {
-  background-color: #f5f6f8;
+  background-color: #f4f5f7;
 }
 
-/* ヘッダー帯（グラデーション）。ページ最上部に敷き、下に白いカードを重ねて使う。 */
+/* ヘッダー帯（グラデーション）。ページ最上部に敷き、下に白カードを続ける。
+   重なりは作らない（クールに、はっきり分離）。 */
 .app-header-band {
   @apply relative overflow-hidden text-white;
-  background-image: linear-gradient(135deg, #2f7bff 0%, #2570f5 45%, #173a8a 100%);
+  background-image: linear-gradient(135deg, #0f1b3d 0%, #12234f 35%, #1a3a8f 75%, #2563eb 100%);
 }
 /* 帯の中に入れる、控えめな幾何学アクセント（写実的な装飾は使わない） */
 .app-header-band::before {
@@ -93,17 +94,17 @@ button, a {
   width: 14rem;
   height: 14rem;
   border-radius: 9999px;
-  background: rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.06);
   pointer-events: none;
 }
 .app-header-band::after {
   content: "";
   position: absolute;
-  bottom: -4rem;
-  right: 4rem;
-  width: 8rem;
-  height: 8rem;
+  bottom: -6rem;
+  right: 6rem;
+  width: 10rem;
+  height: 10rem;
   border-radius: 9999px;
-  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.12);
   pointer-events: none;
 }
