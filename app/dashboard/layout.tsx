@@ -39,7 +39,7 @@ export default function DashboardLayout({
   ];
 
   return (
-    <div className="min-h-screen bg-slate-50/60 md:flex">
+    <div className="min-h-screen dashboard-bg md:flex">
       {/* サイドナビ（PC） */}
       <aside className="hidden md:flex md:flex-col w-64 shrink-0 bg-white/95 backdrop-blur-sm border-r border-slate-200/70 p-5">
         <div className="flex items-center gap-3 mb-8 px-1">

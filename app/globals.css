@@ -145,3 +145,34 @@ button, a {
   opacity: 0.16;
   pointer-events: none;
 }
+
+/* ダッシュボード類（アフター会社・ハウスメーカー/工務店・居住者マイページ）の背景。
+   データ画面としての読みやすさは保ちつつ、うっすら暖色を混ぜて「家」らしい温度感を出す。
+   fixed指定で長いスクロールページでも常に画面全体に均一にかかる。 */
+.dashboard-bg {
+  background-color: #f6f5f2;
+  background-image:
+    radial-gradient(46rem 26rem at 100% -8%, rgba(37, 112, 245, 0.06), transparent 60%),
+    radial-gradient(40rem 24rem at -6% 6%, rgba(255, 176, 89, 0.09), transparent 60%);
+  background-attachment: fixed;
+}
+
+/* 居住者・工務店向け公開フォームなど、縦に長くなりがちなページ用の温かみ背景。
+   （装飾ブロブを使わず fixed グラデーションのみなので、どれだけ長くても崩れない） */
+.warm-bg {
+  background-color: #fbf7f0;
+  background-image: linear-gradient(180deg, #fdf6ec 0%, #fbf2e4 40%, #f7ead6 100%);
+  background-attachment: fixed;
+}
+
+/* ヒーローバナー内に敷く、白っぽいうっすらとした家並みシルエット */
+.hero-skyline {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  width: 60%;
+  height: 100%;
+  color: white;
+  opacity: 0.12;
+  pointer-events: none;
+}

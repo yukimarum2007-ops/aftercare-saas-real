@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useStore } from "@/lib/store";
 import { LogIn } from "lucide-react";
+import HouseIllustration from "@/components/HouseIllustration";
 import Link from "next/link";
 
 export default function MakerLoginPage() {
@@ -32,6 +33,7 @@ export default function MakerLoginPage() {
     <main className="min-h-screen flex items-center justify-center px-6 bg-brand-50 auth-bg">
       <div className="max-w-sm w-full card p-8 space-y-6">
         <div className="text-center space-y-1">
+          <HouseIllustration className="w-16 mx-auto mb-1" />
           <h1 className="text-xl font-bold text-slate-800">ハウスメーカー・工務店ログイン</h1>
           <p className="text-sm text-slate-500">提携アフター会社の承認・管理画面</p>
         </div>

@@ -1,4 +1,5 @@
 import { ReactNode } from "react";
+import HouseSkyline from "./HouseSkyline";
 
 export default function DashboardHero({
   eyebrow,
@@ -23,6 +24,7 @@ export default function DashboardHero({
       <div className="absolute -right-10 -top-16 w-56 h-56 rounded-full bg-white/10" />
       <div className="absolute -right-4 bottom-[-3rem] w-32 h-32 rounded-full bg-white/10" />
       <div className="absolute right-16 top-6 w-16 h-16 rounded-2xl bg-white/10 rotate-12" />
+      <HouseSkyline className="hero-skyline" />
 
       <div className="relative flex items-center gap-4">
         <div className="w-12 h-12 md:w-14 md:h-14 rounded-2xl bg-white/15 backdrop-blur-sm flex items-center justify-center shrink-0">

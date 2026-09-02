@@ -100,7 +100,7 @@ export default function PublicRequestPage() {
 
   if (trackingCode) {
     return (
-      <div className="min-h-screen bg-brand-50 flex items-center justify-center px-6">
+      <div className="min-h-screen warm-bg flex items-center justify-center px-6">
         <div className="max-w-sm w-full card p-8 text-center space-y-5">
           <CheckCircle2 className="mx-auto text-emerald-500" size={56} />
           <div>
@@ -120,7 +120,7 @@ export default function PublicRequestPage() {
   }
 
   return (
-    <div className="min-h-screen bg-brand-50 px-4 py-8">
+    <div className="min-h-screen warm-bg px-4 py-8">
       <div className="max-w-lg mx-auto space-y-6">
         <div className="text-center space-y-1">
           <p className="text-sm font-bold text-brand-600">{company.name}</p>
