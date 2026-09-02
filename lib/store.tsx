@@ -16,6 +16,8 @@ import {
   CustomerOrgLink,
   OrgType,
   BuilderType,
+  BUILDER_TYPE_LABEL,
+  NotificationRecord,
 } from "./types";
 import {
   MockAccount,
@@ -30,6 +32,7 @@ import {
   initialCustomers,
   initialCustomerAccounts,
   initialCustomerOrgLinks,
+  initialNotifications,
 } from "./mock-data";
 
 // ------------------------------------------------------------
@@ -79,6 +82,7 @@ interface StoreState {
   requests: ServiceRequest[];
   customers: Customer[];
   customerOrgLinks: CustomerOrgLink[];
+  notifications: NotificationRecord[];
 
   login: (email: string, password: string) => { ok: boolean; message?: string; redirectTo?: string };
   logout: () => void;
@@ -114,6 +118,23 @@ interface StoreState {
     name: string;
     phone: string;
     address: string;
+    email: string;
+    newPassword?: string;
+  }) => { ok: boolean; message?: string };
+
+  updateCompanyProfile: (input: {
+    companyName: string;
+    phone: string;
+    address: string;
+    fullName: string;
+    email: string;
+    newPassword?: string;
+  }) => { ok: boolean; message?: string };
+
+  updateHouseMakerProfile: (input: {
+    orgName: string;
+    phone: string;
+    fullName: string;
     email: string;
     newPassword?: string;
   }) => { ok: boolean; message?: string };
@@ -176,6 +197,9 @@ interface StoreState {
   requestCustomerOrgLink: (orgType: OrgType, orgId: string) => { ok: boolean; message?: string };
   // 申請されていない側が承認/却下する
   updateCustomerOrgLinkStatus: (linkId: string, status: AffiliationStatus) => void;
+  // 連携の解除（承認済み/申請中どちらの状態でも、施主様・会社・ハウスメーカー/工務店の
+  // どちらからでも削除できる）
+  removeCustomerOrgLink: (linkId: string) => void;
 
   getRequestByTrackingCode: (code: string) => ServiceRequest | null;
 }
@@ -196,6 +220,7 @@ export function MockDataProvider({ children }: { children: React.ReactNode }) {
   const [customers, setCustomers] = useState<Customer[]>(initialCustomers);
   const [customerAccounts, setCustomerAccounts] = useState<MockCustomerAccount[]>(initialCustomerAccounts);
   const [customerOrgLinks, setCustomerOrgLinks] = useState<CustomerOrgLink[]>(initialCustomerOrgLinks);
+  const [notifications, setNotifications] = useState<NotificationRecord[]>(initialNotifications);
 
   const login = useCallback(
     (email: string, password: string) => {
@@ -274,6 +299,7 @@ export function MockDataProvider({ children }: { children: React.ReactNode }) {
         name: input.orgName,
         slug: slugify(input.orgName),
         builder_type: input.builderType,
+        phone: null,
         created_at: new Date().toISOString(),
       };
       const newAccount: MockAccount = {
@@ -391,6 +417,71 @@ export function MockDataProvider({ children }: { children: React.ReactNode }) {
     [currentUser, customerAccounts]
   );
 
+  const updateCompanyProfile = useCallback<StoreState["updateCompanyProfile"]>(
+    (input) => {
+      if (!currentUser || currentUser.type !== "company") {
+        return { ok: false, message: "ログインが必要です。" };
+      }
+      const emailTaken = accounts.some((a) => a.email === input.email && a.refId !== currentUser.companyId);
+      if (emailTaken) {
+        return { ok: false, message: "このメールアドレスは既に使用されています。" };
+      }
+      setCompanies((prev) =>
+        prev.map((c) =>
+          c.id === currentUser.companyId
+            ? { ...c, name: input.companyName, phone: input.phone || null, address: input.address || null }
+            : c
+        )
+      );
+      setAccounts((prev) =>
+        prev.map((a) =>
+          a.type === "company" && a.refId === currentUser.companyId
+            ? {
+                ...a,
+                email: input.email,
+                fullName: input.fullName,
+                password: input.newPassword ? input.newPassword : a.password,
+              }
+            : a
+        )
+      );
+      return { ok: true };
+    },
+    [currentUser, accounts]
+  );
+
+  const updateHouseMakerProfile = useCallback<StoreState["updateHouseMakerProfile"]>(
+    (input) => {
+      if (!currentUser || currentUser.type !== "house_maker") {
+        return { ok: false, message: "ログインが必要です。" };
+      }
+      const emailTaken = accounts.some((a) => a.email === input.email && a.refId !== currentUser.houseMakerId);
+      if (emailTaken) {
+        return { ok: false, message: "このメールアドレスは既に使用されています。" };
+      }
+      setHouseMakers((prev) =>
+        prev.map((hm) =>
+          hm.id === currentUser.houseMakerId ? { ...hm, name: input.orgName, phone: input.phone || null } : hm
+        )
+      );
+      setAccounts((prev) =>
+        prev.map((a) =>
+          a.type === "house_maker" && a.refId === currentUser.houseMakerId
+            ? {
+                ...a,
+                email: input.email,
+                fullName: input.fullName,
+                password: input.newPassword ? input.newPassword : a.password,
+              }
+            : a
+        )
+      );
+      setCurrentUser((prev) => (prev && prev.type === "house_maker" ? { ...prev, fullName: input.fullName } : prev));
+      return { ok: true };
+    },
+    [currentUser, accounts]
+  );
+
   const addPartner = useCallback(
     (input: { name: string; contactName: string; contactPhone: string }) => {
       if (!currentUser || currentUser.type !== "company") return null;
@@ -482,6 +573,70 @@ export function MockDataProvider({ children }: { children: React.ReactNode }) {
     []
   );
 
+  const notifyRequestCreated = useCallback(
+    (request: ServiceRequest) => {
+      const newNotifications: NotificationRecord[] = [];
+      const dateLabel = request.preferred_date
+        ? `${request.preferred_date}${request.preferred_slot === "am" ? " 午前" : request.preferred_slot === "pm" ? " 午後" : ""}${request.preferred_time ? ` ${request.preferred_time}〜` : ""}`
+        : "未指定";
+
+      const push = (email: string | undefined | null, label: string) => {
+        if (!email) return;
+        newNotifications.push({
+          id: randomId("ntf"),
+          email,
+          recipient_label: label,
+          subject: `【受付ID: ${request.tracking_code}】ご予約が完了しました`,
+          body: `${request.customer_name} 様よりご依頼を受け付けました。\n依頼内容: ${request.request_category}\n希望日時: ${dateLabel}\n受付ID: ${request.tracking_code}`,
+          request_id: request.id,
+          created_at: new Date().toISOString(),
+        });
+      };
+
+      // アフター会社
+      const companyAccount = accounts.find((a) => a.type === "company" && a.refId === request.company_id);
+      push(companyAccount?.email, "アフター会社");
+
+      // 施主様（アカウントを持っている場合のみ）
+      if (request.customer_id) {
+        const custAccount = customerAccounts.find((a) => a.customerId === request.customer_id);
+        push(custAccount?.email, "施主様");
+      }
+
+      // 案件を登録したハウスメーカー/工務店
+      const notifiedHouseMakerIds = new Set<string>();
+      if (request.house_maker_id) {
+        const hmAccount = accounts.find((a) => a.type === "house_maker" && a.refId === request.house_maker_id);
+        const hm = houseMakers.find((h) => h.id === request.house_maker_id);
+        push(hmAccount?.email, hm ? BUILDER_TYPE_LABEL[hm.builder_type] : "ハウスメーカー・工務店");
+        notifiedHouseMakerIds.add(request.house_maker_id);
+      }
+
+      // 施主様が承認済みで連携しているハウスメーカー/工務店にもお知らせする
+      if (request.customer_id) {
+        customerOrgLinks
+          .filter(
+            (l) =>
+              l.customer_id === request.customer_id &&
+              l.org_type === "house_maker" &&
+              l.status === "approved" &&
+              !notifiedHouseMakerIds.has(l.org_id)
+          )
+          .forEach((l) => {
+            const hmAccount = accounts.find((a) => a.type === "house_maker" && a.refId === l.org_id);
+            const hm = houseMakers.find((h) => h.id === l.org_id);
+            push(hmAccount?.email, hm ? BUILDER_TYPE_LABEL[hm.builder_type] : "ハウスメーカー・工務店");
+            notifiedHouseMakerIds.add(l.org_id);
+          });
+      }
+
+      if (newNotifications.length > 0) {
+        setNotifications((prev) => [...newNotifications, ...prev]);
+      }
+    },
+    [accounts, customerAccounts, customerOrgLinks, houseMakers]
+  );
+
   const submitPublicRequest = useCallback<StoreState["submitPublicRequest"]>(
     (input) => {
       const company = companies.find((c) => c.id === input.companyId);
@@ -501,9 +656,10 @@ export function MockDataProvider({ children }: { children: React.ReactNode }) {
         preferredSlot: input.preferredSlot,
         preferredTime: input.preferredTime,
       });
+      notifyRequestCreated(req);
       return { ok: true, trackingCode: req.tracking_code };
     },
-    [companies, createRequest]
+    [companies, createRequest, notifyRequestCreated]
   );
 
   const submitHouseMakerRequest = useCallback<StoreState["submitHouseMakerRequest"]>(
@@ -535,9 +691,10 @@ export function MockDataProvider({ children }: { children: React.ReactNode }) {
         preferredSlot: input.preferredSlot,
         preferredTime: input.preferredTime,
       });
+      notifyRequestCreated(req);
       return { ok: true, trackingCode: req.tracking_code };
     },
-    [currentUser, affiliations, createRequest]
+    [currentUser, affiliations, createRequest, notifyRequestCreated]
   );
 
   const submitCustomerRequest = useCallback<StoreState["submitCustomerRequest"]>(
@@ -565,9 +722,10 @@ export function MockDataProvider({ children }: { children: React.ReactNode }) {
         preferredSlot: input.preferredSlot,
         preferredTime: input.preferredTime,
       });
+      notifyRequestCreated(req);
       return { ok: true, trackingCode: req.tracking_code };
     },
-    [currentUser, companies, customers, createRequest]
+    [currentUser, companies, customers, createRequest, notifyRequestCreated]
   );
 
   const updateRequestStatus = useCallback((requestId: string, status: RequestStatus, note: string) => {
@@ -723,6 +881,10 @@ export function MockDataProvider({ children }: { children: React.ReactNode }) {
     );
   }, []);
 
+  const removeCustomerOrgLink = useCallback((linkId: string) => {
+    setCustomerOrgLinks((prev) => prev.filter((l) => l.id !== linkId));
+  }, []);
+
   const getRequestByTrackingCode = useCallback(
     (code: string) => requests.find((r) => r.tracking_code === code.toUpperCase()) ?? null,
     [requests]
@@ -740,12 +902,15 @@ export function MockDataProvider({ children }: { children: React.ReactNode }) {
       requests,
       customers,
       customerOrgLinks,
+      notifications,
       login,
       logout,
       signupCompany,
       signupHouseMaker,
       signupCustomer,
       updateCustomerProfile,
+      updateCompanyProfile,
+      updateHouseMakerProfile,
       addPartner,
       toggleSlot,
       getSlot,
@@ -759,6 +924,7 @@ export function MockDataProvider({ children }: { children: React.ReactNode }) {
       inviteCustomerByPhone,
       requestCustomerOrgLink,
       updateCustomerOrgLinkStatus,
+      removeCustomerOrgLink,
       getRequestByTrackingCode,
     }),
     [
@@ -772,12 +938,15 @@ export function MockDataProvider({ children }: { children: React.ReactNode }) {
       requests,
       customers,
       customerOrgLinks,
+      notifications,
       login,
       logout,
       signupCompany,
       signupHouseMaker,
       signupCustomer,
       updateCustomerProfile,
+      updateCompanyProfile,
+      updateHouseMakerProfile,
       addPartner,
       toggleSlot,
       getSlot,
@@ -791,6 +960,7 @@ export function MockDataProvider({ children }: { children: React.ReactNode }) {
       inviteCustomerByPhone,
       requestCustomerOrgLink,
       updateCustomerOrgLinkStatus,
+      removeCustomerOrgLink,
       getRequestByTrackingCode,
     ]
   );

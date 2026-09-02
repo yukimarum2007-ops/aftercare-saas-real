@@ -7,6 +7,7 @@ import {
   ServiceRequest,
   Customer,
   CustomerOrgLink,
+  NotificationRecord,
 } from "./types";
 
 // ------------------------------------------------------------
@@ -40,6 +41,7 @@ export const initialHouseMakers: HouseMaker[] = [
     name: "サンプルハウスメーカー株式会社",
     slug: "sample-housemaker",
     builder_type: "house_maker",
+    phone: "03-5555-1111",
     created_at: new Date().toISOString(),
   },
   {
@@ -47,6 +49,7 @@ export const initialHouseMakers: HouseMaker[] = [
     name: "みらい工務店株式会社",
     slug: "mirai-koumuten",
     builder_type: "contractor",
+    phone: "03-5555-2222",
     created_at: new Date().toISOString(),
   },
 ];
@@ -247,3 +250,5 @@ export const initialRequests: ServiceRequest[] = [
     updated_at: new Date().toISOString(),
   },
 ];
+
+export const initialNotifications: NotificationRecord[] = [];

@@ -4,7 +4,7 @@ import { useEffect } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useStore } from "@/lib/store";
-import { LayoutDashboard, CalendarDays, Users, UserCog, Wrench } from "lucide-react";
+import { LayoutDashboard, CalendarDays, Users, UserCog, Wrench, Bell, Settings2 } from "lucide-react";
 import SignOutButton from "@/components/SignOutButton";
 
 export default function DashboardLayout({
@@ -39,7 +39,7 @@ export default function DashboardLayout({
   ];
 
   return (
-    <div className="min-h-screen bg-slate-50 md:flex">
+    <div className="min-h-screen bg-slate-50/60 md:flex">
       {/* サイドナビ（PC） */}
       <aside className="hidden md:flex md:flex-col w-64 shrink-0 bg-white/95 backdrop-blur-sm border-r border-slate-200/70 p-5">
         <div className="flex items-center gap-3 mb-8 px-1">
@@ -70,6 +70,22 @@ export default function DashboardLayout({
             );
           })}
         </nav>
+        <div className="flex items-center gap-1 mb-2">
+          <Link
+            href="/dashboard/notifications"
+            className="flex-1 flex items-center justify-center gap-2 rounded-xl px-3 py-2.5 text-sm font-bold text-slate-500 hover:bg-slate-50 hover:text-brand-700"
+          >
+            <Bell size={18} />
+            通知
+          </Link>
+          <Link
+            href="/dashboard/profile"
+            className="flex-1 flex items-center justify-center gap-2 rounded-xl px-3 py-2.5 text-sm font-bold text-slate-500 hover:bg-slate-50 hover:text-brand-700"
+          >
+            <Settings2 size={18} />
+            会社情報
+          </Link>
+        </div>
         <SignOutButton redirectTo="/login" />
       </aside>
 
@@ -77,7 +93,15 @@ export default function DashboardLayout({
         {/* ヘッダー（モバイル） */}
         <header className="md:hidden bg-white/95 backdrop-blur-sm border-b border-slate-200/70 px-4 py-3 flex items-center justify-between sticky top-0 z-10">
           <p className="font-bold text-slate-800 truncate">{companyName}</p>
-          <SignOutButton compact redirectTo="/login" />
+          <div className="flex items-center gap-1">
+            <Link href="/dashboard/notifications" className="p-2 rounded-xl text-slate-500 hover:bg-slate-100" aria-label="通知">
+              <Bell size={20} />
+            </Link>
+            <Link href="/dashboard/profile" className="p-2 rounded-xl text-slate-500 hover:bg-slate-100" aria-label="会社情報">
+              <Settings2 size={20} />
+            </Link>
+            <SignOutButton compact redirectTo="/login" />
+          </div>
         </header>
 
         <main className="flex-1 p-4 md:p-8 pb-24 md:pb-8">{children}</main>

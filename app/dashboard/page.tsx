@@ -14,12 +14,14 @@ import {
 import StatusBadge from "@/components/StatusBadge";
 import RequestModal from "@/components/RequestModal";
 import PublicUrlCard from "@/components/PublicUrlCard";
+import DashboardHero from "@/components/DashboardHero";
 import { getMonthGrid, toDateKey, formatMonthLabel, WEEKDAY_LABELS } from "@/lib/date";
-import { Inbox, CalendarClock, CheckCircle2, ChevronLeft, ChevronRight, Check, X, Send, Unlink } from "lucide-react";
+import { Inbox, CalendarClock, CheckCircle2, ChevronLeft, ChevronRight, Check, X, Send, Unlink, LayoutDashboard } from "lucide-react";
 
 export default function DashboardPage() {
   const {
     currentUser,
+    companies,
     requests,
     affiliations,
     houseMakers,
@@ -28,6 +30,7 @@ export default function DashboardPage() {
     removeAffiliation,
   } = useStore();
   const companyId = currentUser?.type === "company" ? currentUser.companyId : "";
+  const companyName = companies.find((c) => c.id === companyId)?.name ?? "アフター会社";
 
   const [filter, setFilter] = useState<RequestStatus | "all">("all");
   const [selected, setSelected] = useState<ServiceRequest | null>(null);
@@ -101,7 +104,12 @@ export default function DashboardPage() {
 
   return (
     <div className="space-y-6 max-w-6xl mx-auto">
-      <h1 className="text-2xl font-bold text-slate-800">ダッシュボード</h1>
+      <DashboardHero
+        eyebrow="アフター会社"
+        title={companyName}
+        description="案件の受付状況とスケジュールをひと目で確認できます。"
+        icon={<LayoutDashboard className="text-white" size={26} />}
+      />
 
       <PublicUrlCard companyId={companyId} />
 

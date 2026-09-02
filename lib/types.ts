@@ -88,6 +88,7 @@ export interface HouseMaker {
   name: string;
   slug: string;
   builder_type: BuilderType;
+  phone: string | null;
   created_at: string;
 }
 
@@ -156,4 +157,17 @@ export interface CustomerOrgLink {
   customers?: { name: string; phone?: string };
   companies?: { name: string };
   house_makers?: { name: string; builder_type?: BuilderType };
+}
+
+// 予約(依頼)完了時に、関係する3者（施主・アフター会社・ハウスメーカー/工務店）の
+// 登録メールアドレス宛に送られる通知。実際のメール送信は行わず、各アカウントの
+// 「通知」画面で確認できるモック実装。
+export interface NotificationRecord {
+  id: string;
+  email: string;
+  recipient_label: string; // "施主様" / "アフター会社" / "ハウスメーカー" / "工務店"
+  subject: string;
+  body: string;
+  request_id: string;
+  created_at: string;
 }

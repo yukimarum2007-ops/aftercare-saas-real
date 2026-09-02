@@ -4,7 +4,7 @@ import { useEffect } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useStore } from "@/lib/store";
-import { Building, LayoutDashboard, FilePlus2, UserCog } from "lucide-react";
+import { Building, LayoutDashboard, FilePlus2, UserCog, Bell, Settings2 } from "lucide-react";
 import SignOutButton from "@/components/SignOutButton";
 import { BUILDER_TYPE_LABEL } from "@/lib/types";
 
@@ -40,7 +40,7 @@ export default function MakerDashboardLayout({
   ];
 
   return (
-    <div className="min-h-screen bg-slate-50">
+    <div className="min-h-screen bg-slate-50/60">
       <header className="bg-white/95 backdrop-blur-sm border-b border-slate-200/70 px-4 md:px-8 py-4 flex items-center justify-between sticky top-0 z-10">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-brand-500 to-brand-700 shadow-md shadow-brand-600/25 flex items-center justify-center shrink-0">
@@ -67,6 +67,24 @@ export default function MakerDashboardLayout({
               </Link>
             );
           })}
+          <Link
+            href="/maker/dashboard/notifications"
+            className={`p-2 rounded-xl transition-colors ${
+              pathname === "/maker/dashboard/notifications" ? "text-brand-600 bg-brand-50" : "text-slate-500 hover:bg-slate-100"
+            }`}
+            aria-label="通知"
+          >
+            <Bell size={20} />
+          </Link>
+          <Link
+            href="/maker/dashboard/profile"
+            className={`p-2 rounded-xl transition-colors ${
+              pathname === "/maker/dashboard/profile" ? "text-brand-600 bg-brand-50" : "text-slate-500 hover:bg-slate-100"
+            }`}
+            aria-label="会社情報"
+          >
+            <Settings2 size={20} />
+          </Link>
           <SignOutButton compact redirectTo="/maker/login" />
         </div>
       </header>

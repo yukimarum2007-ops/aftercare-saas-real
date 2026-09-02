@@ -6,13 +6,16 @@ import {
   AffiliationStatus,
   AFFILIATION_STATUS_LABEL,
   AFFILIATION_STATUS_COLOR,
+  BUILDER_TYPE_LABEL,
 } from "@/lib/types";
+import DashboardHero from "@/components/DashboardHero";
 import { Check, X, Clock, Building2, Send, Unlink, Inbox } from "lucide-react";
 
 export default function MakerDashboardPage() {
-  const { currentUser, affiliations, companies, updateAffiliationStatus, requestAffiliation, removeAffiliation } =
+  const { currentUser, affiliations, companies, houseMakers, updateAffiliationStatus, requestAffiliation, removeAffiliation } =
     useStore();
   const houseMakerId = currentUser?.type === "house_maker" ? currentUser.houseMakerId : "";
+  const houseMaker = houseMakers.find((hm) => hm.id === houseMakerId);
 
   const [filter, setFilter] = useState<AffiliationStatus | "all">("pending");
   const [newCompanyId, setNewCompanyId] = useState("");
@@ -63,10 +66,12 @@ export default function MakerDashboardPage() {
 
   return (
     <div className="max-w-3xl mx-auto space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold text-slate-800">提携アフター会社の管理</h1>
-        <p className="text-slate-500 mt-1">アフター会社からの提携申請の確認・承認、または自分から新しく申請を送れます。</p>
-      </div>
+      <DashboardHero
+        eyebrow={houseMaker ? BUILDER_TYPE_LABEL[houseMaker.builder_type] : "ハウスメーカー・工務店"}
+        title={houseMaker?.name ?? "ハウスメーカー・工務店"}
+        description="提携アフター会社の確認・承認、新しい提携申請ができます。"
+        icon={<Building2 className="text-white" size={26} />}
+      />
 
       {availableCompanies.length > 0 && (
         <div className="card p-5 space-y-3">

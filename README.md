@@ -17,6 +17,8 @@ Next.js（App Router）+ Tailwind CSS のみで構築した、外部データベ
 | `/dashboard/calendar` | 空き枠（午前/午後）設定 | 必須 |
 | `/dashboard/partners` | 簡易な共有リンク発行（旧・工務店連携機能。下記参照） | 必須 |
 | `/dashboard/customers` | アフター会社用：施主様の連携申請の確認・承認、電話番号での招待 | 必須 |
+| `/dashboard/profile` | アフター会社の会社情報・ログイン情報の編集 | 必須 |
+| `/dashboard/notifications` | アフター会社宛の予約完了通知一覧（モック） | 必須 |
 | `/request/[company_id]` | 施主・工務店の受付フォーム（未ログインでも利用可） | 不要 |
 | `/status` , `/status/[code]` | 対応状況確認（受付ID入力） | 不要 |
 | `/signup` | アフター会社の新規会員登録（ハウスメーカー・工務店選択・提携申請） | 不要 |
@@ -25,11 +27,14 @@ Next.js（App Router）+ Tailwind CSS のみで構築した、外部データベ
 | `/maker/dashboard` | 提携アフター会社の確認・承認、新規提携申請の送信 | 必須 |
 | `/maker/dashboard/new-request` | 承認済みアフター会社への案件直接登録 | 必須 |
 | `/maker/dashboard/customers` | 施主様の連携申請の確認・承認、電話番号での招待 | 必須 |
+| `/maker/dashboard/profile` | ハウスメーカー・工務店の会社情報・ログイン情報の編集 | 必須 |
+| `/maker/dashboard/notifications` | ハウスメーカー・工務店宛の予約完了通知一覧（モック） | 必須 |
 | `/customer/login` | 施主様ログイン | - |
 | `/customer/signup` | 施主様の新規会員登録（ハウスメーカー・工務店/アフター会社を任意で選択） | 不要 |
-| `/customer/dashboard` | 施主様マイページ：連携状況の確認・承認、新規連携申請、自分の依頼案件の確認 | 必須 |
+| `/customer/dashboard` | 施主様マイページ：連携状況の確認・承認・解除、新規連携申請、電話発信、依頼案件の確認 | 必須 |
 | `/customer/dashboard/new-request` | 施主様がアフター会社へ直接依頼を登録 | 必須 |
 | `/customer/dashboard/profile` | 施主様プロフィール編集（氏名・連絡先・パスワード） | 必須 |
+| `/customer/dashboard/notifications` | 施主様宛の予約完了通知一覧（モック） | 必須 |
 
 ---
 
@@ -81,6 +86,28 @@ Next.js（App Router）+ Tailwind CSS のみで構築した、外部データベ
 
 施主様は新規登録時だけでなく、`/customer/dashboard/profile` からいつでも氏名・電話番号・
 住所・メールアドレス・パスワードを変更できます（マイページ右上の歯車アイコンから移動できます）。
+同様に、アフター会社は `/dashboard/profile`、ハウスメーカー・工務店は `/maker/dashboard/profile`
+から、会社名・電話番号・住所・担当者名・ログイン用メールアドレス・パスワードをいつでも変更できます。
+
+### 電話をかける
+
+施主様マイページ(`/customer/dashboard`)では、連携が承認済みのアフター会社・ハウスメーカー・
+工務店それぞれに、登録された電話番号への発信ボタン（`tel:` リンク）が表示されます。予約の
+仕方が分からない・不安、といった施主様が、そのままワンタップで電話をかけられます。
+
+### 予約完了通知（モック）
+
+施主様がアフター会社に依頼（予約）を送信すると、以下の3者それぞれの登録メールアドレス宛に
+通知が作成されます（実際のメール送信は行わず、アプリ内の「通知」画面で確認する形のモックです。
+本番でメール送信する場合は `lib/store.tsx` の `notifyRequestCreated` を実際のメール送信APIに
+置き換えてください）。
+
+- 依頼を受け取ったアフター会社
+- 依頼した施主様（アカウントで依頼した場合）
+- その案件を代理登録した、または施主様と承認済みで連携しているハウスメーカー・工務店
+
+通知は `/dashboard/notifications`（アフター会社）、`/maker/dashboard/notifications`
+（ハウスメーカー・工務店）、`/customer/dashboard/notifications`（施主様）で確認できます。
 
 ### デザインについて
 
@@ -94,11 +121,20 @@ Noto Sans JPフォント、グラデーションボタン、柔らかい影の�
 `.list-row`（ホバーで少し浮き上がる）、データが0件の箇所には `.empty-state`（アイコン付き）を
 使っており、こちらも `app/globals.css` で一括調整できます。
 
+各ダッシュボードのトップには、ハウスメーカーのコーポレートサイトのような、グラデーションと
+幾何学模様をあしらったヒーローバナー（`components/DashboardHero.tsx`）を配置しています。
+
 ### 提携・連携の解除
 
-承認済みの提携・連携は、アフター会社側は `/dashboard`、ハウスメーカー・工務店側は
-`/maker/dashboard` から、それぞれ相手先の行にあるリンク解除アイコンボタンで解除できます。
-申請中のものも同じボタンで取り消せます（確認ダイアログが表示されます）。
+承認済みの提携・連携は、申請中のものも含めて、関係する全員が解除できます。
+
+- アフター会社 ⇔ ハウスメーカー/工務店: `/dashboard`、`/maker/dashboard` それぞれの
+  一覧にあるリンク解除アイコンボタンから
+- 施主様 ⇔ アフター会社/ハウスメーカー・工務店: `/customer/dashboard`（施主様側）、
+  `/dashboard/customers`（アフター会社側）、`/maker/dashboard/customers`
+  （ハウスメーカー・工務店側）のいずれからでも
+
+どのボタンも確認ダイアログを挟んでから解除します。
 
 ※ データはブラウザのタブを開いている間だけメモリ上に保持されます。**ページを再読み込みすると
 初期状態（上記のデモアカウント・サンプル案件）にリセットされます。**
@@ -151,27 +187,35 @@ app/
     page.tsx                        ダッシュボード（提携ハウスメーカー・工務店の管理含む）
     calendar/page.tsx
     partners/page.tsx               簡易共有リンク（旧・工務店連携機能）
-    customers/page.tsx              施主様の連携申請 管理・招待
+    customers/page.tsx              施主様の連携申請 管理・招待・解除
+    profile/page.tsx                会社情報の編集
+    notifications/page.tsx          予約完了通知の一覧
   maker/                            ハウスメーカー・工務店 共通
     login/page.tsx
     signup/page.tsx
     dashboard/                      要ログイン
       layout.tsx
-      page.tsx                      提携アフター会社の管理・新規申請
+      page.tsx                      提携アフター会社の管理・新規申請・解除
       new-request/page.tsx
-      customers/page.tsx            施主様の連携申請 管理・招待
+      customers/page.tsx            施主様の連携申請 管理・招待・解除
+      profile/page.tsx              会社情報の編集
+      notifications/page.tsx        予約完了通知の一覧
   customer/                         施主様
     login/page.tsx
     signup/page.tsx
     dashboard/                      要ログイン
       layout.tsx
-      page.tsx                      マイページ（連携状況・依頼案件）
+      page.tsx                      マイページ（連携状況・電話発信・解除・依頼案件）
       new-request/page.tsx
       profile/page.tsx
+      notifications/page.tsx        予約完了通知の一覧
   request/[company_id]/page.tsx     施主・工務店向け 公開受付フォーム
   status/page.tsx                   受付ID入力画面
   status/[code]/page.tsx            対応状況確認画面
-components/                         共通UIコンポーネント
+components/
+  DashboardHero.tsx                 ダッシュボード用グラデーションヒーロー
+  NotificationsList.tsx             通知一覧の共通コンポーネント
+  （他、共通UIコンポーネント）
 lib/
   store.tsx                         モックデータのContext（状態管理の中心）
   mock-data.ts                      初期ダミーデータ

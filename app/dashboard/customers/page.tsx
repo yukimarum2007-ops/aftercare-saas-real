@@ -7,10 +7,11 @@ import {
   AFFILIATION_STATUS_LABEL,
   AFFILIATION_STATUS_COLOR,
 } from "@/lib/types";
-import { Check, X, User, Phone, MapPin, UserPlus, Users } from "lucide-react";
+import { Check, X, User, Phone, MapPin, UserPlus, Users, Unlink } from "lucide-react";
 
 export default function CompanyCustomersPage() {
-  const { currentUser, customerOrgLinks, customers, updateCustomerOrgLinkStatus, inviteCustomerByPhone } = useStore();
+  const { currentUser, customerOrgLinks, customers, updateCustomerOrgLinkStatus, inviteCustomerByPhone, removeCustomerOrgLink } =
+    useStore();
   const companyId = currentUser?.type === "company" ? currentUser.companyId : "";
 
   const [filter, setFilter] = useState<AffiliationStatus | "all">("pending");
@@ -50,6 +51,12 @@ export default function CompanyCustomersPage() {
     }
     setInviteMessage(result.message ?? "招待を送りました。");
     setPhone("");
+  }
+
+  function handleRemoveLink(id: string, name: string) {
+    if (window.confirm(`${name} 様との連携を解除しますか？`)) {
+      removeCustomerOrgLink(id);
+    }
   }
 
   return (
@@ -126,7 +133,7 @@ export default function CompanyCustomersPage() {
                 {l.status === "pending" && l.requested_by === "org" ? "施主様の承認待ち" : AFFILIATION_STATUS_LABEL[l.status]}
               </span>
             </div>
-            {l.status === "pending" && l.requested_by === "customer" && (
+            {l.status === "pending" && l.requested_by === "customer" ? (
               <div className="flex gap-2 shrink-0">
                 <button
                   onClick={() => updateCustomerOrgLinkStatus(l.id, "approved")}
@@ -143,6 +150,15 @@ export default function CompanyCustomersPage() {
                   却下
                 </button>
               </div>
+            ) : (
+              <button
+                onClick={() => handleRemoveLink(l.id, l.customer?.name ?? "この施主様")}
+                className="p-2 rounded-lg text-slate-400 hover:bg-slate-100 hover:text-red-500 transition-colors shrink-0"
+                title={l.status === "approved" ? "連携を解除" : "申請を取り消す"}
+                aria-label={l.status === "approved" ? "連携を解除" : "申請を取り消す"}
+              >
+                <Unlink size={18} />
+              </button>
             )}
           </div>
         ))}

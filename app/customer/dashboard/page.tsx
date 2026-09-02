@@ -9,11 +9,20 @@ import {
   AFFILIATION_STATUS_COLOR,
   BUILDER_TYPE_LABEL,
 } from "@/lib/types";
-import { Building, Home as HomeIcon, PlusCircle, Link2, Check, X, Inbox } from "lucide-react";
+import { Building, Home as HomeIcon, PlusCircle, Link2, Check, X, Inbox, Phone, Unlink, User } from "lucide-react";
+import DashboardHero from "@/components/DashboardHero";
 
 export default function CustomerDashboardPage() {
-  const { currentUser, customerOrgLinks, companies, houseMakers, requests, requestCustomerOrgLink, updateCustomerOrgLinkStatus } =
-    useStore();
+  const {
+    currentUser,
+    customerOrgLinks,
+    companies,
+    houseMakers,
+    requests,
+    requestCustomerOrgLink,
+    updateCustomerOrgLinkStatus,
+    removeCustomerOrgLink,
+  } = useStore();
   const customerId = currentUser?.type === "customer" ? currentUser.customerId : "";
 
   const [newCompanyId, setNewCompanyId] = useState("");
@@ -24,14 +33,16 @@ export default function CustomerDashboardPage() {
     () =>
       customerOrgLinks
         .filter((l) => l.customer_id === customerId)
-        .map((l) => ({
-          ...l,
-          orgName:
-            l.org_type === "company"
-              ? companies.find((c) => c.id === l.org_id)?.name
-              : houseMakers.find((hm) => hm.id === l.org_id)?.name,
-          builderType: l.org_type === "house_maker" ? houseMakers.find((hm) => hm.id === l.org_id)?.builder_type : undefined,
-        }))
+        .map((l) => {
+          const company = l.org_type === "company" ? companies.find((c) => c.id === l.org_id) : undefined;
+          const houseMaker = l.org_type === "house_maker" ? houseMakers.find((hm) => hm.id === l.org_id) : undefined;
+          return {
+            ...l,
+            orgName: l.org_type === "company" ? company?.name : houseMaker?.name,
+            orgPhone: l.org_type === "company" ? company?.phone : houseMaker?.phone,
+            builderType: houseMaker?.builder_type,
+          };
+        })
         .sort((a, b) => (a.created_at < b.created_at ? 1 : -1)),
     [customerOrgLinks, customerId, companies, houseMakers]
   );
@@ -88,10 +99,21 @@ export default function CustomerDashboardPage() {
     setNewHouseMakerId("");
   }
 
+  function handleRemoveLink(id: string, name: string) {
+    if (window.confirm(`${name} との連携を解除しますか？`)) {
+      removeCustomerOrgLink(id);
+    }
+  }
+
   return (
     <div className="max-w-2xl mx-auto space-y-6">
-      <div className="flex items-center justify-between gap-3">
-        <h1 className="text-2xl font-bold text-slate-800">マイページ</h1>
+      <DashboardHero
+        eyebrow="施主様マイページ"
+        title={`${currentUser && currentUser.type === "customer" ? currentUser.fullName : ""} 様`}
+        description="連携状況の確認や、アフター会社への依頼がここから行えます。"
+        icon={<User className="text-white" size={26} />}
+      />
+      <div className="flex justify-end">
         <Link href="/customer/dashboard/new-request" className="btn-primary !px-4 !py-3 !text-base">
           <PlusCircle size={20} />
           依頼する
@@ -139,11 +161,31 @@ export default function CustomerDashboardPage() {
                 </button>
               </div>
             ) : (
-              <span
-                className={`inline-flex items-center rounded-full border px-3 py-1 text-sm font-bold shrink-0 ${AFFILIATION_STATUS_COLOR[l.status]}`}
-              >
-                {l.status === "pending" ? "先方の承認待ち" : AFFILIATION_STATUS_LABEL[l.status]}
-              </span>
+              <div className="flex items-center gap-2 shrink-0">
+                {l.status === "approved" && l.orgPhone && (
+                  <a
+                    href={`tel:${l.orgPhone}`}
+                    className="p-2 rounded-lg bg-emerald-50 text-emerald-600 hover:bg-emerald-100 transition-colors"
+                    title="電話をかける"
+                    aria-label="電話をかける"
+                  >
+                    <Phone size={16} />
+                  </a>
+                )}
+                <span
+                  className={`inline-flex items-center rounded-full border px-3 py-1 text-sm font-bold ${AFFILIATION_STATUS_COLOR[l.status]}`}
+                >
+                  {l.status === "pending" ? "先方の承認待ち" : AFFILIATION_STATUS_LABEL[l.status]}
+                </span>
+                <button
+                  onClick={() => handleRemoveLink(l.id, l.orgName ?? "この連携先")}
+                  className="p-2 rounded-lg text-slate-400 hover:bg-slate-100 hover:text-red-500 transition-colors"
+                  title={l.status === "approved" ? "連携を解除" : "申請を取り消す"}
+                  aria-label={l.status === "approved" ? "連携を解除" : "申請を取り消す"}
+                >
+                  <Unlink size={16} />
+                </button>
+              </div>
             )}
           </div>
         ))}
