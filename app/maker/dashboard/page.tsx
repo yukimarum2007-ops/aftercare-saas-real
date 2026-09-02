@@ -7,13 +7,15 @@ import {
   AFFILIATION_STATUS_LABEL,
   AFFILIATION_STATUS_COLOR,
 } from "@/lib/types";
-import { Check, X, Clock, Building2 } from "lucide-react";
+import { Check, X, Clock, Building2, Send } from "lucide-react";
 
 export default function MakerDashboardPage() {
-  const { currentUser, affiliations, companies, updateAffiliationStatus } = useStore();
+  const { currentUser, affiliations, companies, updateAffiliationStatus, requestAffiliation } = useStore();
   const houseMakerId = currentUser?.type === "house_maker" ? currentUser.houseMakerId : "";
 
   const [filter, setFilter] = useState<AffiliationStatus | "all">("pending");
+  const [newCompanyId, setNewCompanyId] = useState("");
+  const [requestError, setRequestError] = useState("");
 
   const myAffiliations = useMemo(
     () =>
@@ -23,6 +25,12 @@ export default function MakerDashboardPage() {
         .sort((a, b) => (a.created_at < b.created_at ? 1 : -1)),
     [affiliations, houseMakerId, companies]
   );
+
+  const linkedCompanyIds = useMemo(
+    () => new Set(myAffiliations.filter((a) => a.status !== "rejected").map((a) => a.company_id)),
+    [myAffiliations]
+  );
+  const availableCompanies = companies.filter((c) => !linkedCompanyIds.has(c.id));
 
   const counts = useMemo(() => {
     const c: Record<AffiliationStatus, number> = { pending: 0, approved: 0, rejected: 0 };
@@ -35,12 +43,50 @@ export default function MakerDashboardPage() {
     [myAffiliations, filter]
   );
 
+  function handleRequest() {
+    setRequestError("");
+    if (!newCompanyId) return;
+    const result = requestAffiliation(newCompanyId);
+    if (!result.ok) {
+      setRequestError(result.message ?? "申請に失敗しました。");
+      return;
+    }
+    setNewCompanyId("");
+  }
+
   return (
     <div className="max-w-3xl mx-auto space-y-6">
       <div>
         <h1 className="text-2xl font-bold text-slate-800">提携アフター会社の管理</h1>
-        <p className="text-slate-500 mt-1">新規登録されたアフター会社からの提携申請を確認・承認できます。</p>
+        <p className="text-slate-500 mt-1">アフター会社からの提携申請の確認・承認、または自分から新しく申請を送れます。</p>
       </div>
+
+      {availableCompanies.length > 0 && (
+        <div className="card p-5 space-y-3">
+          <p className="font-bold text-slate-700 flex items-center gap-2">
+            <Send size={18} />
+            新しく提携を申請する
+          </p>
+          <div className="flex gap-2">
+            <select
+              className="input-lg !py-2.5 !text-base flex-1"
+              value={newCompanyId}
+              onChange={(e) => setNewCompanyId(e.target.value)}
+            >
+              <option value="">アフター会社を選択</option>
+              {availableCompanies.map((c) => (
+                <option key={c.id} value={c.id}>
+                  {c.name}
+                </option>
+              ))}
+            </select>
+            <button onClick={handleRequest} disabled={!newCompanyId} className="btn-primary !px-5 !py-2.5 !text-sm">
+              申請を送る
+            </button>
+          </div>
+          {requestError && <p className="text-sm font-bold text-red-600 bg-red-50 rounded-lg px-3 py-2">{requestError}</p>}
+        </div>
+      )}
 
       <div className="grid grid-cols-3 gap-3">
         {(["pending", "approved", "rejected"] as AffiliationStatus[]).map((s) => (
@@ -70,10 +116,10 @@ export default function MakerDashboardPage() {
                 className={`inline-flex items-center gap-1 mt-1 rounded-full border px-2.5 py-0.5 text-xs font-bold ${AFFILIATION_STATUS_COLOR[a.status]}`}
               >
                 <Clock size={12} />
-                {AFFILIATION_STATUS_LABEL[a.status]}
+                {a.status === "pending" && a.requested_by === "house_maker" ? "先方の承認待ち" : AFFILIATION_STATUS_LABEL[a.status]}
               </span>
             </div>
-            {a.status === "pending" && (
+            {a.status === "pending" && a.requested_by === "company" && (
               <div className="flex gap-2 shrink-0">
                 <button
                   onClick={() => updateAffiliationStatus(a.id, "approved")}

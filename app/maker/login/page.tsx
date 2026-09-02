@@ -22,7 +22,7 @@ export default function MakerLoginPage() {
       return;
     }
     if (result.redirectTo !== "/maker/dashboard") {
-      setError("このアカウントはハウスメーカー担当者として登録されていません。");
+      setError("このアカウントはハウスメーカー・工務店担当者として登録されていません。");
       return;
     }
     router.push("/maker/dashboard");
@@ -32,7 +32,7 @@ export default function MakerLoginPage() {
     <main className="min-h-screen flex items-center justify-center px-6 bg-brand-50">
       <div className="max-w-sm w-full card p-8 space-y-6">
         <div className="text-center space-y-1">
-          <h1 className="text-xl font-bold text-slate-800">ハウスメーカー担当者ログイン</h1>
+          <h1 className="text-xl font-bold text-slate-800">ハウスメーカー・工務店ログイン</h1>
           <p className="text-sm text-slate-500">提携アフター会社の承認・管理画面</p>
         </div>
 
@@ -71,6 +71,12 @@ export default function MakerLoginPage() {
         </form>
 
         <p className="text-center text-sm text-slate-400">
+          はじめての方は{" "}
+          <Link href="/maker/signup" className="text-brand-600 font-bold underline">
+            新規会員登録
+          </Link>
+        </p>
+        <p className="text-center text-xs text-slate-400">
           アフター会社様の方は{" "}
           <Link href="/login" className="text-brand-600 font-bold underline">
             こちら

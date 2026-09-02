@@ -6,6 +6,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { useStore } from "@/lib/store";
 import { Building, LayoutDashboard, FilePlus2, UserCog } from "lucide-react";
 import SignOutButton from "@/components/SignOutButton";
+import { BUILDER_TYPE_LABEL } from "@/lib/types";
 
 export default function MakerDashboardLayout({
   children,
@@ -29,7 +30,8 @@ export default function MakerDashboardLayout({
   }
 
   const houseMaker = houseMakers.find((hm) => hm.id === currentUser.houseMakerId);
-  const houseMakerName = houseMaker?.name ?? "ハウスメーカー";
+  const houseMakerName = houseMaker?.name ?? "ハウスメーカー・工務店";
+  const builderTypeLabel = houseMaker ? BUILDER_TYPE_LABEL[houseMaker.builder_type] : "ハウスメーカー・工務店";
 
   const navItems = [
     { href: "/maker/dashboard", label: "提携申請", icon: LayoutDashboard },
@@ -45,7 +47,7 @@ export default function MakerDashboardLayout({
             <Building className="text-white" size={18} />
           </div>
           <div>
-            <p className="text-[11px] font-bold text-slate-400">ハウスメーカー</p>
+            <p className="text-[11px] font-bold text-slate-400">{builderTypeLabel}</p>
             <p className="font-bold text-slate-800">{houseMakerName}</p>
           </div>
         </div>

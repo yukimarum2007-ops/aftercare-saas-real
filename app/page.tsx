@@ -15,7 +15,7 @@ export default function Home() {
             管理システム
           </h1>
           <p className="text-slate-500 text-sm leading-relaxed">
-            アフター会社・ハウスメーカーの方はログイン、
+            アフター会社・ハウスメーカー・工務店の方はログイン、
             <br />
             施主様は新規会員登録からご利用ください。
           </p>
@@ -30,9 +30,20 @@ export default function Home() {
             <UserPlus size={22} />
             アフター会社 新規登録
           </Link>
+
+          <div className="flex items-center gap-3 py-1">
+            <div className="h-px flex-1 bg-slate-200" />
+            <span className="text-xs font-bold text-slate-400">ハウスメーカー・工務店はこちら</span>
+            <div className="h-px flex-1 bg-slate-200" />
+          </div>
+
           <Link href="/maker/login" className="btn-secondary w-full">
             <Building size={22} />
-            ハウスメーカー担当者ログイン
+            ハウスメーカー・工務店ログイン
+          </Link>
+          <Link href="/maker/signup" className="btn-secondary w-full">
+            <UserPlus size={22} />
+            ハウスメーカー・工務店 新規登録
           </Link>
 
           <div className="flex items-center gap-3 py-1">
@@ -59,6 +70,7 @@ export default function Home() {
           <p className="section-eyebrow mb-1">デモ用ログイン情報</p>
           <p>アフター会社: company@example.com / password123</p>
           <p>ハウスメーカー: maker@example.com / password123</p>
+          <p>工務店: contractor@example.com / password123</p>
           <p>施主様: customer@example.com / password123</p>
           <p className="text-xs text-slate-400 pt-1">
             ※本アプリはダミーデータで動作するデモ版です。データはブラウザのメモリ上のみで保持され、再読み込みでリセットされます。

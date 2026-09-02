@@ -6,7 +6,7 @@ import {
   CompanyAffiliation,
   ServiceRequest,
   Customer,
-  CustomerConnection,
+  CustomerOrgLink,
 } from "./types";
 
 // ------------------------------------------------------------
@@ -39,12 +39,14 @@ export const initialHouseMakers: HouseMaker[] = [
     id: "hm1",
     name: "サンプルハウスメーカー株式会社",
     slug: "sample-housemaker",
+    builder_type: "house_maker",
     created_at: new Date().toISOString(),
   },
   {
     id: "hm2",
-    name: "みらい住宅株式会社",
-    slug: "mirai-jutaku",
+    name: "みらい工務店株式会社",
+    slug: "mirai-koumuten",
+    builder_type: "contractor",
     created_at: new Date().toISOString(),
   },
 ];
@@ -65,6 +67,14 @@ export const initialAccounts: MockAccount[] = [
     type: "house_maker",
     refId: "hm1",
     fullName: "鈴木 花子",
+  },
+  {
+    id: "u3",
+    email: "contractor@example.com",
+    password: "password123",
+    type: "house_maker",
+    refId: "hm2",
+    fullName: "高木 健二",
   },
 ];
 
@@ -95,14 +105,34 @@ export const initialCustomerAccounts: MockCustomerAccount[] = [
   },
 ];
 
-export const initialCustomerConnections: CustomerConnection[] = [
+export const initialCustomerOrgLinks: CustomerOrgLink[] = [
   {
-    id: "cc1",
+    id: "col1",
     customer_id: "cu1",
-    company_id: "c1",
-    house_maker_id: "hm1",
-    company_status: "approved",
-    house_maker_status: "pending",
+    org_type: "company",
+    org_id: "c1",
+    status: "approved",
+    requested_by: "customer",
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString(),
+  },
+  {
+    id: "col2",
+    customer_id: "cu1",
+    org_type: "house_maker",
+    org_id: "hm1",
+    status: "pending",
+    requested_by: "customer",
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString(),
+  },
+  {
+    id: "col3",
+    customer_id: "cu1",
+    org_type: "house_maker",
+    org_id: "hm2",
+    status: "pending",
+    requested_by: "org",
     created_at: new Date().toISOString(),
     updated_at: new Date().toISOString(),
   },
@@ -128,6 +158,7 @@ export const initialAffiliations: CompanyAffiliation[] = [
     company_id: "c1",
     house_maker_id: "hm1",
     status: "approved",
+    requested_by: "company",
     created_at: new Date().toISOString(),
     updated_at: new Date().toISOString(),
   },
@@ -136,6 +167,7 @@ export const initialAffiliations: CompanyAffiliation[] = [
     company_id: "c1",
     house_maker_id: "hm2",
     status: "pending",
+    requested_by: "house_maker",
     created_at: new Date().toISOString(),
     updated_at: new Date().toISOString(),
   },

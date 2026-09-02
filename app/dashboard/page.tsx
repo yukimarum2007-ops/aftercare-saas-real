@@ -9,19 +9,22 @@ import {
   SOURCE_LABEL,
   AFFILIATION_STATUS_LABEL,
   AFFILIATION_STATUS_COLOR,
+  BUILDER_TYPE_LABEL,
 } from "@/lib/types";
 import StatusBadge from "@/components/StatusBadge";
 import RequestModal from "@/components/RequestModal";
 import PublicUrlCard from "@/components/PublicUrlCard";
 import { getMonthGrid, toDateKey, formatMonthLabel, WEEKDAY_LABELS } from "@/lib/date";
-import { Inbox, CalendarClock, CheckCircle2, ChevronLeft, ChevronRight } from "lucide-react";
+import { Inbox, CalendarClock, CheckCircle2, ChevronLeft, ChevronRight, Check, X, Send } from "lucide-react";
 
 export default function DashboardPage() {
-  const { currentUser, requests, affiliations, houseMakers } = useStore();
+  const { currentUser, requests, affiliations, houseMakers, requestAffiliation, updateAffiliationStatus } = useStore();
   const companyId = currentUser?.type === "company" ? currentUser.companyId : "";
 
   const [filter, setFilter] = useState<RequestStatus | "all">("all");
   const [selected, setSelected] = useState<ServiceRequest | null>(null);
+  const [newHouseMakerId, setNewHouseMakerId] = useState("");
+  const [affiliationError, setAffiliationError] = useState("");
   const [cursor, setCursor] = useState(() => {
     const now = new Date();
     return { year: now.getFullYear(), month: now.getMonth() };
@@ -39,6 +42,23 @@ export default function DashboardPage() {
         .map((a) => ({ ...a, house_makers: houseMakers.find((hm) => hm.id === a.house_maker_id) })),
     [affiliations, companyId, houseMakers]
   );
+
+  const linkedHouseMakerIds = useMemo(
+    () => new Set(companyAffiliations.filter((a) => a.status !== "rejected").map((a) => a.house_maker_id)),
+    [companyAffiliations]
+  );
+  const availableHouseMakers = houseMakers.filter((hm) => !linkedHouseMakerIds.has(hm.id));
+
+  function handleRequestAffiliation() {
+    setAffiliationError("");
+    if (!newHouseMakerId) return;
+    const result = requestAffiliation(newHouseMakerId);
+    if (!result.ok) {
+      setAffiliationError(result.message ?? "申請に失敗しました。");
+      return;
+    }
+    setNewHouseMakerId("");
+  }
 
   const counts = useMemo(() => {
     const c: Record<RequestStatus, number> = { new: 0, confirmed: 0, completed: 0 };
@@ -71,16 +91,75 @@ export default function DashboardPage() {
 
       <PublicUrlCard companyId={companyId} />
 
-      {companyAffiliations.length > 0 && (
-        <div className="flex flex-wrap gap-2">
+      {(companyAffiliations.length > 0 || availableHouseMakers.length > 0) && (
+        <div className="card p-5 space-y-3">
+          <p className="font-bold text-slate-700">提携ハウスメーカー・工務店</p>
           {companyAffiliations.map((a) => (
-            <span
-              key={a.id}
-              className={`inline-flex items-center rounded-full border px-3 py-1 text-sm font-bold ${AFFILIATION_STATUS_COLOR[a.status]}`}
-            >
-              {a.house_makers?.name}: {AFFILIATION_STATUS_LABEL[a.status]}
-            </span>
+            <div key={a.id} className="flex items-center gap-3">
+              <div className="flex-1 min-w-0">
+                <p className="font-bold text-slate-800 truncate">{a.house_makers?.name}</p>
+                {a.house_makers?.builder_type && (
+                  <p className="text-xs text-slate-400">{BUILDER_TYPE_LABEL[a.house_makers.builder_type]}</p>
+                )}
+              </div>
+              {a.status === "pending" && a.requested_by === "house_maker" ? (
+                <div className="flex gap-2 shrink-0">
+                  <button
+                    onClick={() => updateAffiliationStatus(a.id, "approved")}
+                    className="btn-primary !px-3 !py-2 !text-sm !rounded-lg"
+                  >
+                    <Check size={16} />
+                    承認
+                  </button>
+                  <button
+                    onClick={() => updateAffiliationStatus(a.id, "rejected")}
+                    className="btn-secondary !px-3 !py-2 !text-sm !rounded-lg !border-slate-200 !text-slate-500"
+                  >
+                    <X size={16} />
+                  </button>
+                </div>
+              ) : (
+                <span
+                  className={`inline-flex items-center rounded-full border px-3 py-1 text-sm font-bold shrink-0 ${AFFILIATION_STATUS_COLOR[a.status]}`}
+                >
+                  {a.status === "pending" ? "先方の承認待ち" : AFFILIATION_STATUS_LABEL[a.status]}
+                </span>
+              )}
+            </div>
           ))}
+
+          {availableHouseMakers.length > 0 && (
+            <div className="border-t border-slate-100 pt-3 space-y-2">
+              <p className="text-xs font-bold text-slate-400 flex items-center gap-1">
+                <Send size={14} />
+                新しく提携を申請する
+              </p>
+              <div className="flex gap-2">
+                <select
+                  className="input-lg !py-2.5 !text-base flex-1"
+                  value={newHouseMakerId}
+                  onChange={(e) => setNewHouseMakerId(e.target.value)}
+                >
+                  <option value="">ハウスメーカー・工務店を選択</option>
+                  {availableHouseMakers.map((hm) => (
+                    <option key={hm.id} value={hm.id}>
+                      {hm.name}（{BUILDER_TYPE_LABEL[hm.builder_type]}）
+                    </option>
+                  ))}
+                </select>
+                <button
+                  onClick={handleRequestAffiliation}
+                  disabled={!newHouseMakerId}
+                  className="btn-secondary !px-4 !py-2.5 !text-sm"
+                >
+                  申請
+                </button>
+              </div>
+              {affiliationError && (
+                <p className="text-sm font-bold text-red-600 bg-red-50 rounded-lg px-3 py-2">{affiliationError}</p>
+              )}
+            </div>
+          )}
         </div>
       )}
 

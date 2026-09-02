@@ -10,9 +10,12 @@ import {
   ServiceRequest,
   RequestStatus,
   AffiliationStatus,
+  AffiliationRequester,
   RequestSource,
   Customer,
-  CustomerConnection,
+  CustomerOrgLink,
+  OrgType,
+  BuilderType,
 } from "./types";
 import {
   MockAccount,
@@ -26,7 +29,7 @@ import {
   initialRequests,
   initialCustomers,
   initialCustomerAccounts,
-  initialCustomerConnections,
+  initialCustomerOrgLinks,
 } from "./mock-data";
 
 // ------------------------------------------------------------
@@ -35,6 +38,11 @@ import {
 // モック（ダミー）データです。ページを再読み込みすると初期状態に
 // 戻ります。本番のデータベースに接続する際は、この store.tsx の
 // 各関数を実際のAPI呼び出しに置き換えてください。
+//
+// ハウスメーカーと工務店は、アフター会社・施主様どちらから見ても
+// 「連携先」として同じ立場・同じ機能を持つため、house_maker という
+// 型名/アカウント種別を共有し、HouseMaker.builder_type で表示上の
+// 種別（ハウスメーカー / 工務店）のみを分けています。
 // ------------------------------------------------------------
 
 type CurrentUser =
@@ -52,7 +60,7 @@ function slugify(name: string) {
     name
       .toLowerCase()
       .replace(/[^a-z0-9]+/g, "-")
-      .replace(/(^-|-$)/g, "") || "company"
+      .replace(/(^-|-$)/g, "") || "org"
   ) + "-" + Math.random().toString(36).slice(2, 8);
 }
 
@@ -70,16 +78,26 @@ interface StoreState {
   affiliations: CompanyAffiliation[];
   requests: ServiceRequest[];
   customers: Customer[];
-  customerConnections: CustomerConnection[];
+  customerOrgLinks: CustomerOrgLink[];
 
   login: (email: string, password: string) => { ok: boolean; message?: string; redirectTo?: string };
   logout: () => void;
+
   signupCompany: (input: {
     companyName: string;
     fullName: string;
     email: string;
     password: string;
     houseMakerId: string;
+  }) => { ok: boolean; message?: string };
+
+  signupHouseMaker: (input: {
+    orgName: string;
+    fullName: string;
+    email: string;
+    password: string;
+    builderType: BuilderType;
+    companyId?: string; // 空文字/未指定なら提携申請なし
   }) => { ok: boolean; message?: string };
 
   signupCustomer: (input: {
@@ -142,12 +160,21 @@ interface StoreState {
   }) => { ok: boolean; trackingCode?: string; message?: string };
 
   updateRequestStatus: (requestId: string, status: RequestStatus, note: string) => void;
+
+  // アフター会社 ⇔ ハウスメーカー/工務店 の提携申請
+  // targetId には「相手側」のID（自分が会社なら houseMakerId、自分がハウスメーカー/
+  // 工務店なら companyId）を渡す。どちらからでも申請でき、申請していない側が承認する。
+  requestAffiliation: (targetId: string) => { ok: boolean; message?: string };
   updateAffiliationStatus: (affiliationId: string, status: AffiliationStatus) => void;
-  updateCustomerConnectionStatus: (
-    connectionId: string,
-    side: "company" | "house_maker",
-    status: AffiliationStatus
-  ) => void;
+
+  // 施主様 ⇔ アフター会社/ハウスメーカー・工務店 の連携
+  // 会社・ハウスメーカー/工務店側が電話番号で施主様を検索して招待する
+  inviteCustomerByPhone: (phone: string) => { ok: boolean; message?: string };
+  // 施主様側が自分で連携申請を送る（新規登録後、マイページからいつでも）
+  requestCustomerOrgLink: (orgType: OrgType, orgId: string) => { ok: boolean; message?: string };
+  // 申請されていない側が承認/却下する
+  updateCustomerOrgLinkStatus: (linkId: string, status: AffiliationStatus) => void;
+
   getRequestByTrackingCode: (code: string) => ServiceRequest | null;
 }
 
@@ -156,7 +183,7 @@ const StoreContext = createContext<StoreState | null>(null);
 export function MockDataProvider({ children }: { children: React.ReactNode }) {
   const [currentUser, setCurrentUser] = useState<CurrentUser>(null);
   const [companies, setCompanies] = useState<Company[]>(initialCompanies);
-  const [houseMakers] = useState<HouseMaker[]>(initialHouseMakers);
+  const [houseMakers, setHouseMakers] = useState<HouseMaker[]>(initialHouseMakers);
   const [accounts, setAccounts] = useState<MockAccount[]>(initialAccounts);
   const [partners, setPartners] = useState<Partner[]>(initialPartners);
   const [availabilitySlots, setAvailabilitySlots] = useState<Record<string, AvailabilitySlot>>(
@@ -166,9 +193,7 @@ export function MockDataProvider({ children }: { children: React.ReactNode }) {
   const [requests, setRequests] = useState<ServiceRequest[]>(initialRequests);
   const [customers, setCustomers] = useState<Customer[]>(initialCustomers);
   const [customerAccounts, setCustomerAccounts] = useState<MockCustomerAccount[]>(initialCustomerAccounts);
-  const [customerConnections, setCustomerConnections] = useState<CustomerConnection[]>(
-    initialCustomerConnections
-  );
+  const [customerOrgLinks, setCustomerOrgLinks] = useState<CustomerOrgLink[]>(initialCustomerOrgLinks);
 
   const login = useCallback(
     (email: string, password: string) => {
@@ -198,8 +223,8 @@ export function MockDataProvider({ children }: { children: React.ReactNode }) {
 
   const logout = useCallback(() => setCurrentUser(null), []);
 
-  const signupCompany = useCallback(
-    (input: { companyName: string; fullName: string; email: string; password: string; houseMakerId: string }) => {
+  const signupCompany = useCallback<StoreState["signupCompany"]>(
+    (input) => {
       if (accounts.some((a) => a.email === input.email)) {
         return { ok: false, message: "このメールアドレスは既に登録されています。" };
       }
@@ -224,12 +249,54 @@ export function MockDataProvider({ children }: { children: React.ReactNode }) {
         company_id: companyId,
         house_maker_id: input.houseMakerId,
         status: "pending",
+        requested_by: "company",
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
       };
       setCompanies((prev) => [...prev, newCompany]);
       setAccounts((prev) => [...prev, newAccount]);
       setAffiliations((prev) => [...prev, newAffiliation]);
+      return { ok: true };
+    },
+    [accounts]
+  );
+
+  const signupHouseMaker = useCallback<StoreState["signupHouseMaker"]>(
+    (input) => {
+      if (accounts.some((a) => a.email === input.email)) {
+        return { ok: false, message: "このメールアドレスは既に登録されています。" };
+      }
+      const houseMakerId = randomId("hm");
+      const newHouseMaker: HouseMaker = {
+        id: houseMakerId,
+        name: input.orgName,
+        slug: slugify(input.orgName),
+        builder_type: input.builderType,
+        created_at: new Date().toISOString(),
+      };
+      const newAccount: MockAccount = {
+        id: randomId("u"),
+        email: input.email,
+        password: input.password,
+        type: "house_maker",
+        refId: houseMakerId,
+        fullName: input.fullName,
+      };
+      setHouseMakers((prev) => [...prev, newHouseMaker]);
+      setAccounts((prev) => [...prev, newAccount]);
+
+      if (input.companyId) {
+        const newAffiliation: CompanyAffiliation = {
+          id: randomId("af"),
+          company_id: input.companyId,
+          house_maker_id: houseMakerId,
+          status: "pending",
+          requested_by: "house_maker",
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+        };
+        setAffiliations((prev) => [...prev, newAffiliation]);
+      }
       return { ok: true };
     },
     [accounts]
@@ -258,19 +325,33 @@ export function MockDataProvider({ children }: { children: React.ReactNode }) {
       setCustomers((prev) => [...prev, newCustomer]);
       setCustomerAccounts((prev) => [...prev, newAccount]);
 
-      // 会社・ハウスメーカーのどちらも選択されなかった場合は連携レコードを作らない
-      if (input.companyId || input.houseMakerId) {
-        const newConnection: CustomerConnection = {
-          id: randomId("cc"),
+      const newLinks: CustomerOrgLink[] = [];
+      if (input.companyId) {
+        newLinks.push({
+          id: randomId("col"),
           customer_id: customerId,
-          company_id: input.companyId || null,
-          house_maker_id: input.houseMakerId || null,
-          company_status: input.companyId ? "pending" : "approved",
-          house_maker_status: input.houseMakerId ? "pending" : "approved",
+          org_type: "company",
+          org_id: input.companyId,
+          status: "pending",
+          requested_by: "customer",
           created_at: new Date().toISOString(),
           updated_at: new Date().toISOString(),
-        };
-        setCustomerConnections((prev) => [...prev, newConnection]);
+        });
+      }
+      if (input.houseMakerId) {
+        newLinks.push({
+          id: randomId("col"),
+          customer_id: customerId,
+          org_type: "house_maker",
+          org_id: input.houseMakerId,
+          status: "pending",
+          requested_by: "customer",
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+        });
+      }
+      if (newLinks.length > 0) {
+        setCustomerOrgLinks((prev) => [...prev, ...newLinks]);
       }
       return { ok: true };
     },
@@ -495,29 +576,146 @@ export function MockDataProvider({ children }: { children: React.ReactNode }) {
     );
   }, []);
 
+  const requestAffiliation = useCallback<StoreState["requestAffiliation"]>(
+    (targetId) => {
+      if (!currentUser) return { ok: false, message: "ログインが必要です。" };
+      let companyId: string;
+      let houseMakerId: string;
+      let requestedBy: AffiliationRequester;
+      if (currentUser.type === "company") {
+        companyId = currentUser.companyId;
+        houseMakerId = targetId;
+        requestedBy = "company";
+      } else if (currentUser.type === "house_maker") {
+        houseMakerId = currentUser.houseMakerId;
+        companyId = targetId;
+        requestedBy = "house_maker";
+      } else {
+        return { ok: false, message: "この操作を行う権限がありません。" };
+      }
+
+      const existing = affiliations.find((a) => a.company_id === companyId && a.house_maker_id === houseMakerId);
+      if (existing) {
+        if (existing.status === "approved") return { ok: false, message: "すでに提携済みです。" };
+        if (existing.status === "pending") return { ok: false, message: "すでに申請中です。" };
+        setAffiliations((prev) =>
+          prev.map((a) =>
+            a.id === existing.id
+              ? { ...a, status: "pending", requested_by: requestedBy, updated_at: new Date().toISOString() }
+              : a
+          )
+        );
+        return { ok: true };
+      }
+
+      const newAffiliation: CompanyAffiliation = {
+        id: randomId("af"),
+        company_id: companyId,
+        house_maker_id: houseMakerId,
+        status: "pending",
+        requested_by: requestedBy,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      };
+      setAffiliations((prev) => [...prev, newAffiliation]);
+      return { ok: true };
+    },
+    [currentUser, affiliations]
+  );
+
   const updateAffiliationStatus = useCallback((affiliationId: string, status: AffiliationStatus) => {
     setAffiliations((prev) =>
       prev.map((a) => (a.id === affiliationId ? { ...a, status, updated_at: new Date().toISOString() } : a))
     );
   }, []);
 
-  const updateCustomerConnectionStatus = useCallback(
-    (connectionId: string, side: "company" | "house_maker", status: AffiliationStatus) => {
-      setCustomerConnections((prev) =>
-        prev.map((c) =>
-          c.id === connectionId
-            ? {
-                ...c,
-                company_status: side === "company" ? status : c.company_status,
-                house_maker_status: side === "house_maker" ? status : c.house_maker_status,
-                updated_at: new Date().toISOString(),
-              }
-            : c
-        )
+  const inviteCustomerByPhone = useCallback<StoreState["inviteCustomerByPhone"]>(
+    (phone) => {
+      if (!currentUser || (currentUser.type !== "company" && currentUser.type !== "house_maker")) {
+        return { ok: false, message: "ログインが必要です。" };
+      }
+      const orgType: OrgType = currentUser.type === "company" ? "company" : "house_maker";
+      const orgId = currentUser.type === "company" ? currentUser.companyId : currentUser.houseMakerId;
+
+      const customer = customers.find((c) => c.phone === phone);
+      if (!customer) {
+        return { ok: false, message: "この電話番号でご登録の施主様が見つかりませんでした。" };
+      }
+
+      const existing = customerOrgLinks.find(
+        (l) => l.customer_id === customer.id && l.org_type === orgType && l.org_id === orgId
       );
+      if (existing) {
+        if (existing.status === "approved") return { ok: false, message: "すでに連携済みです。" };
+        if (existing.status === "pending") return { ok: false, message: "すでに申請中です。" };
+        setCustomerOrgLinks((prev) =>
+          prev.map((l) =>
+            l.id === existing.id
+              ? { ...l, status: "pending", requested_by: "org", updated_at: new Date().toISOString() }
+              : l
+          )
+        );
+        return { ok: true, message: `${customer.name} 様に連携申請を送りました。` };
+      }
+
+      const newLink: CustomerOrgLink = {
+        id: randomId("col"),
+        customer_id: customer.id,
+        org_type: orgType,
+        org_id: orgId,
+        status: "pending",
+        requested_by: "org",
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      };
+      setCustomerOrgLinks((prev) => [...prev, newLink]);
+      return { ok: true, message: `${customer.name} 様に連携申請を送りました。` };
     },
-    []
+    [currentUser, customers, customerOrgLinks]
   );
+
+  const requestCustomerOrgLink = useCallback<StoreState["requestCustomerOrgLink"]>(
+    (orgType, orgId) => {
+      if (!currentUser || currentUser.type !== "customer") {
+        return { ok: false, message: "ログインが必要です。" };
+      }
+      const existing = customerOrgLinks.find(
+        (l) => l.customer_id === currentUser.customerId && l.org_type === orgType && l.org_id === orgId
+      );
+      if (existing) {
+        if (existing.status === "approved") return { ok: false, message: "すでに連携済みです。" };
+        if (existing.status === "pending") return { ok: false, message: "すでに申請中です。" };
+        setCustomerOrgLinks((prev) =>
+          prev.map((l) =>
+            l.id === existing.id
+              ? { ...l, status: "pending", requested_by: "customer", updated_at: new Date().toISOString() }
+              : l
+          )
+        );
+        return { ok: true };
+      }
+
+      const newLink: CustomerOrgLink = {
+        id: randomId("col"),
+        customer_id: currentUser.customerId,
+        org_type: orgType,
+        org_id: orgId,
+        status: "pending",
+        requested_by: "customer",
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      };
+      setCustomerOrgLinks((prev) => [...prev, newLink]);
+      return { ok: true };
+    },
+    [currentUser, customerOrgLinks]
+  );
+
+  const updateCustomerOrgLinkStatus = useCallback((linkId: string, status: AffiliationStatus) => {
+    setCustomerOrgLinks((prev) =>
+      prev.map((l) => (l.id === linkId ? { ...l, status, updated_at: new Date().toISOString() } : l))
+    );
+  }, []);
 
   const getRequestByTrackingCode = useCallback(
     (code: string) => requests.find((r) => r.tracking_code === code.toUpperCase()) ?? null,
@@ -535,10 +733,11 @@ export function MockDataProvider({ children }: { children: React.ReactNode }) {
       affiliations,
       requests,
       customers,
-      customerConnections,
+      customerOrgLinks,
       login,
       logout,
       signupCompany,
+      signupHouseMaker,
       signupCustomer,
       updateCustomerProfile,
       addPartner,
@@ -548,8 +747,11 @@ export function MockDataProvider({ children }: { children: React.ReactNode }) {
       submitHouseMakerRequest,
       submitCustomerRequest,
       updateRequestStatus,
+      requestAffiliation,
       updateAffiliationStatus,
-      updateCustomerConnectionStatus,
+      inviteCustomerByPhone,
+      requestCustomerOrgLink,
+      updateCustomerOrgLinkStatus,
       getRequestByTrackingCode,
     }),
     [
@@ -562,10 +764,11 @@ export function MockDataProvider({ children }: { children: React.ReactNode }) {
       affiliations,
       requests,
       customers,
-      customerConnections,
+      customerOrgLinks,
       login,
       logout,
       signupCompany,
+      signupHouseMaker,
       signupCustomer,
       updateCustomerProfile,
       addPartner,
@@ -575,8 +778,11 @@ export function MockDataProvider({ children }: { children: React.ReactNode }) {
       submitHouseMakerRequest,
       submitCustomerRequest,
       updateRequestStatus,
+      requestAffiliation,
       updateAffiliationStatus,
-      updateCustomerConnectionStatus,
+      inviteCustomerByPhone,
+      requestCustomerOrgLink,
+      updateCustomerOrgLinkStatus,
       getRequestByTrackingCode,
     ]
   );

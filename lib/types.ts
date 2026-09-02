@@ -61,7 +61,7 @@ export const STATUS_LABEL: Record<RequestStatus, string> = {
 
 export const SOURCE_LABEL: Record<RequestSource, string> = {
   homeowner: "施主直接",
-  house_maker: "ハウスメーカー経由",
+  house_maker: "ハウスメーカー・工務店経由",
   partner: "工務店経由",
 };
 
@@ -73,22 +73,36 @@ export const STATUS_COLOR: Record<RequestStatus, string> = {
 
 export type AffiliationStatus = "pending" | "approved" | "rejected";
 
+// ハウスメーカーと工務店は、アフター会社から見ると「連携先」として同じ立場・
+// 同じ機能（提携申請の承認、案件の代理登録、施主様との連携）を持つため、
+// 同一のテーブル（house_makers）を共有し、builder_type で表示上の種別のみ分ける。
+export type BuilderType = "house_maker" | "contractor";
+
+export const BUILDER_TYPE_LABEL: Record<BuilderType, string> = {
+  house_maker: "ハウスメーカー",
+  contractor: "工務店",
+};
+
 export interface HouseMaker {
   id: string;
   name: string;
   slug: string;
+  builder_type: BuilderType;
   created_at: string;
 }
+
+export type AffiliationRequester = "company" | "house_maker";
 
 export interface CompanyAffiliation {
   id: string;
   company_id: string;
   house_maker_id: string;
   status: AffiliationStatus;
+  requested_by: AffiliationRequester; // どちらが提携を申請したか（申請していない側が承認する）
   created_at: string;
   updated_at: string;
   companies?: { name: string };
-  house_makers?: { name: string };
+  house_makers?: { name: string; builder_type?: BuilderType };
 }
 
 export const AFFILIATION_STATUS_LABEL: Record<AffiliationStatus, string> = {
@@ -125,16 +139,21 @@ export interface Customer {
   created_at: string;
 }
 
-export interface CustomerConnection {
+// 施主 ⇔ アフター会社 / ハウスメーカー・工務店 の連携申請
+// どちらの側からでも申請でき（requested_by）、申請していない側が承認する。
+export type OrgType = "company" | "house_maker";
+export type LinkRequester = "customer" | "org";
+
+export interface CustomerOrgLink {
   id: string;
   customer_id: string;
-  company_id: string | null; // null の場合は「アフター会社との連携なし」
-  house_maker_id: string | null; // null の場合は「ハウスメーカーとの連携なし」
-  company_status: AffiliationStatus; // company_id が null の場合は使用しない
-  house_maker_status: AffiliationStatus; // house_maker_id が null の場合は使用しない
+  org_type: OrgType;
+  org_id: string;
+  status: AffiliationStatus;
+  requested_by: LinkRequester;
   created_at: string;
   updated_at: string;
-  customers?: { name: string };
+  customers?: { name: string; phone?: string };
   companies?: { name: string };
-  house_makers?: { name: string };
+  house_makers?: { name: string; builder_type?: BuilderType };
 }
